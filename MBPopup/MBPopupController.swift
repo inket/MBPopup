@@ -111,7 +111,7 @@ public class MBPopupController: NSWindowController {
     // MARK: Controlling the Panel
 
     private func openPanel() {
-        if let currentEvent = NSApp.currentEvent, currentEvent.type == .leftMouseDown {
+        if let currentEvent = NSApp.currentEvent, currentEvent.type == .leftMouseUp {
             willOpenPopup?(currentEvent.mbpopup_pressedModifiers())
         } else {
             willOpenPopup?(.none)
