@@ -161,8 +161,10 @@ public class MBPopupController: NSWindowController {
 
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = MBPopup.openDuration
-            panel.animator().alphaValue = 1
+            self.panel.animator().alphaValue = 1
         }, completionHandler: {
+            guard self.isOpen else { return }
+
             self.didOpenPopup?()
         })
     }
@@ -176,9 +178,11 @@ public class MBPopupController: NSWindowController {
 
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = MBPopup.closeDuration
-            window?.animator().alphaValue = 0
+            self.panel.animator().alphaValue = 0
         }, completionHandler: {
-            self.window?.orderOut(nil)
+            guard !self.isOpen else { return }
+
+            self.panel.orderOut(nil)
             self.statusItem.button?.isHighlighted = false
             self.didClosePopup?()
         })
