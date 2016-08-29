@@ -38,4 +38,14 @@ extension NSStatusBarButton {
         
         return buttonRect
     }
+
+    func boundsContain(point: CGPoint) -> Bool {
+        // NSPointInRect treats the upper edge of the rectangle as being outside the boundaries,
+        // so a point in the upper edge of the button (or the screen's) is considered outside the button.
+        // We compensate for that by faking a 1pt bigger button size.
+        var buttonBounds = bounds
+        buttonBounds.size.height += 1
+
+        return NSPointInRect(point, buttonBounds)
+    }
 }

@@ -36,7 +36,10 @@ public class MBPopupController: NSWindowController {
 
     private(set) public var isOpen: Bool = false {
         didSet {
-            statusItem.button?.isHighlighted = isOpen
+            // Highlight instantly if the popup is opened, but wait until the popup is closed to unhighlight
+            if isOpen {
+                statusItem.button?.isHighlighted = isOpen
+            }
         }
     }
 
@@ -45,7 +48,9 @@ public class MBPopupController: NSWindowController {
     public var willClosePopup: (() -> Void)?
     public var didClosePopup: (() -> Void)?
 
-    var eventMonitor: Any?
+    var lastMouseDownEvent: NSEvent?
+    var mouseDownEventMonitor: Any?
+    var mouseUpEventMonitor: Any?
 
     // MARK: Initializing
 
@@ -69,20 +74,27 @@ public class MBPopupController: NSWindowController {
     // Mark: Setup
 
     private func setup() {
-        self.eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
-            guard let statusItemButton = self?.statusItem.button else { return event }
+        self.mouseDownEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+            self?.lastMouseDownEvent = event
 
-            // NSPointInRect treats the upper edge of the rectangle as being outside the boundaries, so clicking on the
-            // upper edge of the button (and the screen's) won't return true.
-            // We compensate for that by faking a 1pt bigger button size.
-            var buttonBounds = statusItemButton.bounds
-            buttonBounds.size.height += 1
-
-            if NSPointInRect(event.locationInWindow, buttonBounds) {
+            if self?.statusItem.button?.boundsContain(point: event.locationInWindow) == true {
                 self?.togglePopup()
 
                 // Stop propagating the event
                 return nil
+            }
+
+            return event
+        }
+
+        self.mouseUpEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseUp) { [weak self] event in
+            guard self?.isOpen == true else { return event }
+            guard let lastMouseDownEvent = self?.lastMouseDownEvent else { return event }
+
+            if event.timestamp - lastMouseDownEvent.timestamp > 0.35 {
+                self?.togglePopup()
+
+                return event
             }
 
             return event
@@ -214,7 +226,8 @@ public class MBPopupController: NSWindowController {
     // MARK: Deinitializing
 
     deinit {
-        NSEvent.removeMonitor(eventMonitor)
+        NSEvent.removeMonitor(mouseDownEventMonitor)
+        NSEvent.removeMonitor(mouseUpEventMonitor)
         NSStatusBar.system().removeStatusItem(statusItem)
     }
 }
