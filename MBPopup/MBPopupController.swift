@@ -10,14 +10,9 @@ import Foundation
 import Cocoa
 
 public struct MBPopup {
-    static var openDuration: TimeInterval = 0.15
-    static var closeDuration: TimeInterval = 0.1
-    static var arrowSize = MBPopupArrowSize(height: 8.0, width: 12.0)
-}
-
-public struct MBPopupArrowSize {
-    let height: CGFloat
-    let width: CGFloat
+    public static var openDuration: TimeInterval = 0.15
+    public static var closeDuration: TimeInterval = 0.2
+    public static var arrowSize = CGSize(width: 12, height: 8)
 }
 
 public enum MBPopupKeys {

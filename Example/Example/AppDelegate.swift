@@ -21,6 +21,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        MBPopup.openDuration = 0.15 // Default value
+        MBPopup.closeDuration = 0.2 // Default value
+        MBPopup.arrowSize = CGSize(width: 12, height: 8) // Default value
+
         popupController.statusItem.title = "Popup"
         popupController.statusItem.length = 48
         popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor
