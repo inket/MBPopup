@@ -157,44 +157,40 @@ public class MBPopupController: NSWindowController {
     // MARK: Calculating CGRects
 
     fileprivate func statusRectForWindow(_ window: NSWindow) -> CGRect {
-        if let screenRect = NSScreen.screens()?.first?.frame {
-            var statusRect = CGRect.zero
+        guard let screenRect = NSScreen.screens()?.first?.frame else { return .zero }
 
-            if let statusItemButton = statusItem.button {
-                statusRect = statusItemButton.globalRect ?? statusRect
-                statusRect.origin.y = NSMinY(statusRect) - NSHeight(statusRect)
-            } else {
-                statusRect.size = NSMakeSize(statusItem.length, NSStatusBar.system().thickness)
-                statusRect.origin.x = round((NSWidth(screenRect) - NSWidth(statusRect)) / 2)
-                statusRect.origin.y = NSHeight(screenRect) - NSHeight(statusRect) * 2
-            }
+        var statusRect = CGRect.zero
 
-            return statusRect
+        if let statusItemButton = statusItem.button {
+            statusRect = statusItemButton.globalRect ?? statusRect
+            statusRect.origin.y = NSMinY(statusRect) - NSHeight(statusRect)
+        } else {
+            statusRect.size = NSMakeSize(statusItem.length, NSStatusBar.system().thickness)
+            statusRect.origin.x = round((NSWidth(screenRect) - NSWidth(statusRect)) / 2)
+            statusRect.origin.y = NSHeight(screenRect) - NSHeight(statusRect) * 2
         }
 
-        return CGRect.zero
+        return statusRect
     }
 
     private func rectsForPanel(_ panel: NSPanel) -> (screenRect: CGRect, statusRect: CGRect, panelRect: CGRect) {
-        if let mainScreen = NSScreen.main() {
-            let screenRect = mainScreen.frame
-            let statusRect = statusRectForWindow(panel)
+        // Headless Mac case
+        guard let mainScreen = NSScreen.main() else { return (CGRect.zero, CGRect.zero, CGRect.zero) }
 
-            var panelRect = panel.frame
-            panelRect.size.height = contentView.frame.height + 2 + MBPopup.arrowSize.height
-            panelRect.size.width = contentView.frame.width + 2
-            panelRect.origin.x = round(NSMidX(statusRect) - NSWidth(panelRect) / 2)
-            panelRect.origin.y = NSMaxY(statusRect) - NSHeight(panelRect)
+        let screenRect = mainScreen.frame
+        let statusRect = statusRectForWindow(panel)
 
-            if NSMaxX(panelRect) > (NSMaxX(screenRect) - MBPopup.arrowSize.height) {
-                panelRect.origin.x -= NSMaxX(panelRect) - (NSMaxX(screenRect) - MBPopup.arrowSize.height)
-            }
+        var panelRect = panel.frame
+        panelRect.size.height = contentView.frame.height + 2 + MBPopup.arrowSize.height
+        panelRect.size.width = contentView.frame.width + 2
+        panelRect.origin.x = round(NSMidX(statusRect) - NSWidth(panelRect) / 2)
+        panelRect.origin.y = NSMaxY(statusRect) - NSHeight(panelRect)
 
-            return (screenRect, statusRect, panelRect)
+        if NSMaxX(panelRect) > (NSMaxX(screenRect) - MBPopup.arrowSize.height) {
+            panelRect.origin.x -= NSMaxX(panelRect) - (NSMaxX(screenRect) - MBPopup.arrowSize.height)
         }
 
-        // Headless Mac case
-        return (CGRect.zero, CGRect.zero, CGRect.zero)
+        return (screenRect, statusRect, panelRect)
     }
 
     // MARK: Deinitializing
