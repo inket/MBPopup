@@ -45,6 +45,8 @@ public class MBPopupController: NSWindowController {
     public var willClosePopup: (() -> Void)?
     public var didClosePopup: (() -> Void)?
 
+    var eventMonitor: Any?
+
     // MARK: Initializing
 
     public init(contentView: NSView) {
@@ -67,8 +69,24 @@ public class MBPopupController: NSWindowController {
     // Mark: Setup
 
     private func setup() {
-        statusItem.target = self
-        statusItem.action = #selector(MBPopupController.togglePopup)
+        self.eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+            guard let statusItemButton = self?.statusItem.button else { return event }
+
+            // NSPointInRect treats the upper edge of the rectangle as being outside the boundaries, so clicking on the
+            // upper edge of the button (and the screen's) won't return true.
+            // We compensate for that by faking a 1pt bigger button size.
+            var buttonBounds = statusItemButton.bounds
+            buttonBounds.size.height += 1
+
+            if NSPointInRect(event.locationInWindow, buttonBounds) {
+                self?.togglePopup()
+
+                // Stop propagating the event
+                return nil
+            }
+
+            return event
+        }
 
         panel.windowController = self
         panel.acceptsMouseMovedEvents = true
@@ -111,7 +129,7 @@ public class MBPopupController: NSWindowController {
     // MARK: Controlling the Panel
 
     private func openPanel() {
-        if let currentEvent = NSApp.currentEvent, currentEvent.type == .leftMouseUp {
+        if let currentEvent = NSApp.currentEvent, currentEvent.type == .leftMouseDown {
             willOpenPopup?(currentEvent.mbpopup_pressedModifiers())
         } else {
             willOpenPopup?(.none)
@@ -196,6 +214,7 @@ public class MBPopupController: NSWindowController {
     // MARK: Deinitializing
 
     deinit {
+        NSEvent.removeMonitor(eventMonitor)
         NSStatusBar.system().removeStatusItem(statusItem)
     }
 }

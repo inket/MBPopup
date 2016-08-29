@@ -38,10 +38,4 @@ extension NSStatusBarButton {
         
         return buttonRect
     }
-
-    open override func mouseDown(with event: NSEvent) {
-        let previousState = self.isHighlighted
-        super.mouseDown(with: event)
-        self.isHighlighted = !previousState
-    }
 }
