@@ -14,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let popupController: MBPopupController
     let myView = NSView(frame: CGRect(x: 0, y: 0, width: 300, height: 400))
     let label = NSTextField(frame: CGRect(x: 50, y: 175, width: 200, height: 50))
+    let secondStatusItem = NSStatusBar.system().statusItem(withLength: 30)
 
     override init() {
         self.popupController = MBPopupController(contentView: myView)
@@ -24,6 +25,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         MBPopup.openDuration = 0.15 // Default value
         MBPopup.closeDuration = 0.2 // Default value
         MBPopup.arrowSize = CGSize(width: 12, height: 8) // Default value
+
+        secondStatusItem.title = "test"
+        secondStatusItem.menu = NSMenu()
+        secondStatusItem.menu?.addItem(withTitle: "Normal status item is unaffected", action: nil, keyEquivalent: "")
 
         popupController.statusItem.title = "Popup"
         popupController.statusItem.length = 48

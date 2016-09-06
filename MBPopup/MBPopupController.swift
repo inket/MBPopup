@@ -13,6 +13,7 @@ public struct MBPopup {
     public static var openDuration: TimeInterval = 0.15
     public static var closeDuration: TimeInterval = 0.2
     public static var arrowSize = CGSize(width: 12, height: 8)
+    static var statusItemButton: NSStatusBarButton?
 }
 
 public enum MBPopupKeys {
@@ -23,7 +24,7 @@ public enum MBPopupKeys {
 }
 
 public class MBPopupController: NSWindowController {
-    public let statusItem = NSStatusBar.system().statusItem(withLength: 24)
+    public let statusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
     public let panel = MBPopupPanel()
 
     public let backgroundView = MBPopupBackgroundView()
@@ -37,6 +38,7 @@ public class MBPopupController: NSWindowController {
             }
         }
     }
+    fileprivate var isOpening: Bool = false
 
     public var willOpenPopup: ((MBPopupKeys) -> Void)?
     public var didOpenPopup: (() -> Void)?
@@ -69,27 +71,24 @@ public class MBPopupController: NSWindowController {
     // Mark: Setup
 
     private func setup() {
+        MBPopup.statusItemButton = statusItem.button
+
         self.mouseDownEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
-            self?.lastMouseDownEvent = event
-
-            if self?.statusItem.button?.boundsContain(point: event.locationInWindow) == true {
+            if self?.statusItem.shouldTrigger(forEvent: event) == true {
+                self?.lastMouseDownEvent = event
                 self?.togglePopup()
-
-                // Stop propagating the event
-                return nil
             }
 
             return event
         }
 
         self.mouseUpEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseUp) { [weak self] event in
-            guard self?.isOpen == true else { return event }
             guard let lastMouseDownEvent = self?.lastMouseDownEvent else { return event }
+            guard self?.isOpen == true else { return event }
 
-            if event.timestamp - lastMouseDownEvent.timestamp > 0.35 {
+            if self?.statusItem.shouldTrigger(forEvent: event) == true,
+               event.timestamp - lastMouseDownEvent.timestamp > 0.35 {
                 self?.togglePopup()
-
-                return event
             }
 
             return event
@@ -136,8 +135,10 @@ public class MBPopupController: NSWindowController {
     // MARK: Controlling the Panel
 
     private func openPanel() {
+        self.isOpening = true
+
         if let currentEvent = NSApp.currentEvent, currentEvent.type == .leftMouseDown {
-            willOpenPopup?(currentEvent.mbpopup_pressedModifiers())
+            willOpenPopup?(currentEvent.pressedModifiers)
         } else {
             willOpenPopup?(.none)
         }
@@ -145,22 +146,27 @@ public class MBPopupController: NSWindowController {
         self.isOpen = true
 
         contentView.isHidden = false
-        let (_, statusRect, panelRect) = rectsForPanel(panel)
+        let (_, _, panelRect) = rects(forPanel: panel)
 
         NSApp.activate(ignoringOtherApps: false)
         panel.alphaValue = 0
-        panel.setFrame(statusRect, display: true)
-        panel.makeKeyAndOrderFront(self)
-
         panel.setFrame(panelRect, display: true)
+        panel.makeKeyAndOrderFront(self)
 
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = MBPopup.openDuration
             self.panel.animator().alphaValue = 1
         }, completionHandler: {
-            guard self.isOpen else { return }
+            self.isOpening = false
 
-            self.didOpenPopup?()
+            if self.isOpen {
+                self.didOpenPopup?()
+
+                // Trying to open the popup from an inactive space/screen, will open the panel but lose key status
+                // because the system's "active screen change" overrides it. If the panel isn't the key window, clicking
+                // outside it won't close the popup. Therefore, we try to make the panel key _after_ opening it.
+                self.panel.makeKeyAndOrderFront(self)
+            }
         })
     }
 
@@ -185,29 +191,20 @@ public class MBPopupController: NSWindowController {
 
     // MARK: Calculating CGRects
 
-    fileprivate func statusRectForWindow(_ window: NSWindow) -> CGRect {
-        guard let screenRect = NSScreen.screens()?.first?.frame else { return .zero }
+    fileprivate func statusRect(forWindow window: NSWindow) -> CGRect {
+        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow
 
-        var statusRect = CGRect.zero
-
-        if let statusItemButton = statusItem.button {
-            statusRect = statusItemButton.globalRect ?? statusRect
-            statusRect.origin.y = NSMinY(statusRect) - NSHeight(statusRect)
-        } else {
-            statusRect.size = NSMakeSize(statusItem.length, NSStatusBar.system().thickness)
-            statusRect.origin.x = round((NSWidth(screenRect) - NSWidth(statusRect)) / 2)
-            statusRect.origin.y = NSHeight(screenRect) - NSHeight(statusRect) * 2
-        }
-
+        var statusRect = statusItem.globalRect(usingWindow: statusItemWindow) ?? .zero
+        statusRect.origin.y = NSMinY(statusRect) - NSHeight(statusRect)
         return statusRect
     }
 
-    private func rectsForPanel(_ panel: NSPanel) -> (screenRect: CGRect, statusRect: CGRect, panelRect: CGRect) {
-        // Headless Mac case
-        guard let mainScreen = NSScreen.main() else { return (CGRect.zero, CGRect.zero, CGRect.zero) }
+    private func rects(forPanel panel: NSPanel) -> (screenRect: CGRect, statusRect: CGRect, panelRect: CGRect) {
+        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow
+        guard let screen = statusItemWindow?.screen else { return (CGRect.zero, CGRect.zero, CGRect.zero) }
 
-        let screenRect = mainScreen.frame
-        let statusRect = statusRectForWindow(panel)
+        let screenRect = screen.frame
+        let statusRect = self.statusRect(forWindow: panel)
 
         var panelRect = panel.frame
         panelRect.size.height = contentView.frame.height + 2 + MBPopup.arrowSize.height
@@ -238,13 +235,13 @@ extension MBPopupController: NSWindowDelegate {
     }
 
     public func windowDidResignKey(_ notification: Notification) {
-        if window?.isVisible == true {
+        if window?.isVisible == true && !isOpening {
             closePopup()
         }
     }
 
     public func windowDidResize(_ notification: Notification) {
-        let statusRect = statusRectForWindow(panel)
+        let statusRect = self.statusRect(forWindow: panel)
         let panelRect = panel.frame
 
         let statusX = round(NSMidX(statusRect))
