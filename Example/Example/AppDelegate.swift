@@ -26,10 +26,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         MBPopup.closeDuration = 0.2 // Default value
         MBPopup.arrowSize = CGSize(width: 12, height: 8) // Default value
 
-        secondStatusItem.title = "test"
-        secondStatusItem.menu = NSMenu()
-        secondStatusItem.menu?.addItem(withTitle: "Normal status item is unaffected", action: nil, keyEquivalent: "")
-
         popupController.statusItem.title = "Popup"
         popupController.statusItem.length = 48
         popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor
@@ -63,6 +59,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         label.isSelectable = false
         label.alignment = NSTextAlignment.center
         myView.addSubview(label)
+
+        secondStatusItem.title = "test"
+        secondStatusItem.menu = NSMenu()
+        secondStatusItem.menu?.addItem(withTitle: "Normal status item is unaffected", action: nil, keyEquivalent: "")
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {}
