@@ -26,8 +26,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         MBPopup.closeDuration = 0.2 // Default value
         MBPopup.arrowSize = CGSize(width: 12, height: 8) // Default value
 
-        popupController.statusItem.title = "Popup"
-        popupController.statusItem.length = 48
+        popupController.statusItem.title = "MBPopup"
+        popupController.statusItem.length = 70
         popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor
 
         popupController.willOpenPopup = { keys in
@@ -60,7 +60,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         label.alignment = NSTextAlignment.center
         myView.addSubview(label)
 
-        secondStatusItem.title = "test"
+        secondStatusItem.title = "normal"
+        secondStatusItem.length = 60
         secondStatusItem.menu = NSMenu()
         secondStatusItem.menu?.addItem(withTitle: "Normal status item is unaffected", action: nil, keyEquivalent: "")
     }

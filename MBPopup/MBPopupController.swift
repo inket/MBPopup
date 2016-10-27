@@ -107,7 +107,7 @@ public class MBPopupController: NSWindowController {
         backgroundView.addSubview(contentView)
 
         var contentFrame = contentView.frame
-        contentFrame.origin.x = 1
+        contentFrame.origin.x = 2
         contentFrame.origin.y = 1
         contentView.frame = contentFrame
 
