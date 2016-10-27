@@ -12,8 +12,6 @@ import Cocoa
 public class MBPopupBackgroundView: NSView {
     public var lineThickness: CGFloat = 1
     public var cornerRadius: CGFloat = 6
-    public var strokeOpacity: CGFloat = 1
-    public var fillOpacity: CGFloat = 0.9
     public var backgroundColor = NSColor.windowBackgroundColor
 
     private let kappa: CGFloat = 0.55
