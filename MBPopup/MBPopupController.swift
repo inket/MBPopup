@@ -222,8 +222,14 @@ public class MBPopupController: NSWindowController {
     // MARK: Deinitializing
 
     deinit {
-        NSEvent.removeMonitor(mouseDownEventMonitor)
-        NSEvent.removeMonitor(mouseUpEventMonitor)
+        if let monitor = mouseDownEventMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
+
+        if let monitor = mouseUpEventMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
+
         NSStatusBar.system().removeStatusItem(statusItem)
     }
 }
