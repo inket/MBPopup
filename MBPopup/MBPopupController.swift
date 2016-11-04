@@ -58,7 +58,7 @@ public class MBPopupController: NSWindowController {
 
         setup()
     }
-    
+
     required public init?(coder: NSCoder) {
         self.contentView = coder.decodeObject(forKey: "contentView") as? NSView ?? NSView()
 
@@ -195,7 +195,7 @@ public class MBPopupController: NSWindowController {
         let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow
 
         var statusRect = statusItem.globalRect(usingWindow: statusItemWindow) ?? .zero
-        statusRect.origin.y = NSMinY(statusRect) - NSHeight(statusRect)
+        statusRect.origin.y = statusRect.minY - statusRect.height
         return statusRect
     }
 
@@ -209,11 +209,11 @@ public class MBPopupController: NSWindowController {
         var panelRect = panel.frame
         panelRect.size.height = contentView.frame.height + 2 + MBPopup.arrowSize.height
         panelRect.size.width = contentView.frame.width + 2
-        panelRect.origin.x = round(NSMidX(statusRect) - NSWidth(panelRect) / 2)
-        panelRect.origin.y = NSMaxY(statusRect) - NSHeight(panelRect)
+        panelRect.origin.x = round(statusRect.midX - panelRect.width / 2)
+        panelRect.origin.y = statusRect.maxY - panelRect.height
 
-        if NSMaxX(panelRect) > (NSMaxX(screenRect) - MBPopup.arrowSize.height) {
-            panelRect.origin.x -= NSMaxX(panelRect) - (NSMaxX(screenRect) - MBPopup.arrowSize.height)
+        if panelRect.maxX > (screenRect.maxX - MBPopup.arrowSize.height) {
+            panelRect.origin.x -= panelRect.maxX - (screenRect.maxX - MBPopup.arrowSize.height)
         }
 
         return (screenRect, statusRect, panelRect)
@@ -250,8 +250,8 @@ extension MBPopupController: NSWindowDelegate {
         let statusRect = self.statusRect(forWindow: panel)
         let panelRect = panel.frame
 
-        let statusX = round(NSMidX(statusRect))
-        let panelX = statusX - NSMinX(panelRect)
+        let statusX = round(statusRect.midX)
+        let panelX = statusX - panelRect.minX
 
         backgroundView.arrowX = panelX
     }

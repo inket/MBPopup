@@ -26,14 +26,14 @@ public class MBPopupBackgroundView: NSView {
         let contentRect = NSInsetRect(self.bounds, lineThickness, lineThickness)
         let path = NSBezierPath()
 
-        let maxX = NSMaxX(contentRect)
-        let minX = NSMinX(contentRect)
-        let maxY = NSMaxY(contentRect) - MBPopup.arrowSize.height
-        let minY = NSMinY(contentRect)
+        let maxX = contentRect.maxX
+        let minX = contentRect.minX
+        let maxY = contentRect.maxY - MBPopup.arrowSize.height
+        let minY = contentRect.minY
         let cornerControlPoint: CGFloat = -cornerRadius + (cornerRadius * kappa)
 
         // Arrow
-        path.move(to: CGPoint(x: arrowX, y: NSMaxY(contentRect)))
+        path.move(to: CGPoint(x: arrowX, y: contentRect.maxY))
         path.line(to: CGPoint(x: arrowX + MBPopup.arrowSize.width / 2, y: maxY))
         path.line(to: CGPoint(x: maxX - cornerRadius, y: maxY))
 
