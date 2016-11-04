@@ -28,7 +28,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         popupController.statusItem.title = "MBPopup"
         popupController.statusItem.length = 70
-        popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor
+        popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value
+        popupController.backgroundView.inset = 1 // Default value
 
         popupController.willOpenPopup = { keys in
             var labelText = "Hi!"
@@ -65,6 +66,4 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         secondStatusItem.menu = NSMenu()
         secondStatusItem.menu?.addItem(withTitle: "Normal status item is unaffected", action: nil, keyEquivalent: "")
     }
-
-    func applicationWillTerminate(_ aNotification: Notification) {}
 }
