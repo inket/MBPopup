@@ -106,10 +106,7 @@ public class MBPopupController: NSWindowController {
         panel.contentView = backgroundView
         backgroundView.addSubview(contentView)
 
-        var contentFrame = contentView.frame
-        contentFrame.origin.x = backgroundView.lineThickness
-        contentFrame.origin.y = backgroundView.lineThickness
-        contentView.frame = contentFrame
+        contentView.setFrameOrigin(NSPoint(x: backgroundView.inset, y: backgroundView.inset))
 
         panel.initialFirstResponder = contentView
     }

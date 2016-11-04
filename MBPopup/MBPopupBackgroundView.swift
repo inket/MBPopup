@@ -10,7 +10,12 @@ import Foundation
 import Cocoa
 
 public class MBPopupBackgroundView: NSView {
-    public var lineThickness: CGFloat = 1
+    public var inset: CGFloat = 1 {
+        didSet {
+            guard let subview = subviews.first else { return }
+            subview.setFrameOrigin(NSPoint(x: inset, y: inset))
+        }
+    }
     public var cornerRadius: CGFloat = 6
     public var backgroundColor = NSColor.windowBackgroundColor
 
@@ -23,7 +28,7 @@ public class MBPopupBackgroundView: NSView {
     }
 
     public override func draw(_ dirtyRect: NSRect) {
-        let contentRect = NSInsetRect(self.bounds, lineThickness, lineThickness)
+        let contentRect = self.bounds
         let path = NSBezierPath()
 
         let maxX = contentRect.maxX
