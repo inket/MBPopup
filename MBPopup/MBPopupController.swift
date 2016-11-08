@@ -129,6 +129,27 @@ public class MBPopupController: NSWindowController {
         }
     }
 
+    /**
+     Resizes the panel (animated). Although the background view will be resized with the panel, your content view will
+     not be, unless it's using auto-layout constraints to match the background view's size.
+
+     - parameter newSize: The desired size
+     */
+    public func resizePopup(to newSize: CGSize) {
+        var frame = panel.frame
+
+        frame.origin.y -= newSize.height - frame.size.height
+        frame.size.height = newSize.height
+
+        let widthDifference = newSize.width - frame.size.width
+        if widthDifference != 0 {
+            frame.origin.x -= widthDifference / 2
+            frame.size.width = newSize.width
+        }
+
+        panel.setFrame(frame, display: true, animate: true)
+    }
+
     // MARK: Controlling the Panel
 
     private func openPanel() {
