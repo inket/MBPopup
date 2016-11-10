@@ -12,12 +12,15 @@ import MBPopup
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     let popupController: MBPopupController
-    let myView = NSView(frame: CGRect(x: 0, y: 0, width: 300, height: 400))
-    let label = NSTextField(frame: CGRect(x: 50, y: 175, width: 200, height: 50))
+    let myView: NSView
+    let label = NSTextField(frame: CGRect(x: 0, y: 175, width: 200, height: 50))
     let secondStatusItem = NSStatusBar.system().statusItem(withLength: 30)
 
     override init() {
+        // You can set the initial size this way, or later using `resizePopup`
+        self.myView = NSView(frame: CGRect(x: 0, y: 0, width: 200, height: 300))
         self.popupController = MBPopupController(contentView: myView)
+
         super.init()
     }
 
@@ -26,11 +29,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popupController.statusItem.length = 70
 
         popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value
-        popupController.backgroundView.inset = 1 // Default value
 
         popupController.openDuration = 0.15 // Default value
         popupController.closeDuration = 0.2 // Default value
         popupController.arrowSize = CGSize(width: 12, height: 8) // Default value
+        popupController.contentInset = 1 // Default value
 
         popupController.willOpenPopup = { keys in
             var labelText = "Hi!"
@@ -62,9 +65,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         label.alignment = NSTextAlignment.center
         myView.addSubview(label)
 
+        let resizeButton = NSButton(frame: CGRect(x: 60, y: 150, width: 80, height: 20))
+        resizeButton.bezelStyle = .texturedSquare
+        resizeButton.title = "Resize"
+        resizeButton.target = self
+        resizeButton.action = #selector(AppDelegate.resize)
+        myView.addSubview(resizeButton)
+
         secondStatusItem.title = "normal"
         secondStatusItem.length = 60
         secondStatusItem.menu = NSMenu()
         secondStatusItem.menu?.addItem(withTitle: "Normal status item is unaffected", action: nil, keyEquivalent: "")
+    }
+
+    func resize() {
+        if myView.frame.size.height == 400 {
+            popupController.resizePopup(to: CGSize(width: 200, height: 300))
+        } else {
+            popupController.resizePopup(to: CGSize(width: 300, height: 400))
+        }
     }
 }

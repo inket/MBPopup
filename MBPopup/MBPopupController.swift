@@ -25,6 +25,7 @@ public class MBPopupController: NSWindowController {
     public let panel = MBPopupPanel()
 
     public let backgroundView = MBPopupBackgroundView()
+    public let containerView = MBPopupContainerView()
     public var contentView: NSView
 
     public var openDuration: TimeInterval = 0.15
@@ -34,7 +35,16 @@ public class MBPopupController: NSWindowController {
         get { return backgroundView.arrowSize }
         set { backgroundView.arrowSize = newValue }
     }
-    
+
+    public var contentInset: CGFloat {
+        get { return containerView.contentInset }
+        set {
+            let size = containerView.frame.size
+            containerView.contentInset = newValue
+            resizePopup(to: size)
+        }
+    }
+
     private(set) public var isOpen: Bool = false {
         didSet {
             // Highlight instantly if the popup is opened, but wait until the popup is closed to unhighlight
@@ -109,11 +119,16 @@ public class MBPopupController: NSWindowController {
         panel.hasShadow = true
         panel.delegate = self
         panel.contentView = backgroundView
-        backgroundView.addSubview(contentView)
+        backgroundView.addSubview(containerView)
 
-        contentView.setFrameOrigin(NSPoint(x: backgroundView.inset, y: backgroundView.inset))
+        let contentSize = contentView.frame.size
+
+        containerView.setup()
+        containerView.contentView = contentView
 
         panel.initialFirstResponder = contentView
+
+        resizePopup(to: contentSize)
     }
 
     // MARK: Actions
@@ -140,8 +155,12 @@ public class MBPopupController: NSWindowController {
 
      - parameter newSize: The desired size
      */
-    public func resizePopup(to newSize: CGSize) {
+    public func resizePopup(to size: CGSize) {
         var frame = panel.frame
+
+        var newSize = size
+        newSize.height += arrowSize.height + contentInset * 2
+        newSize.width += contentInset * 2
 
         frame.origin.y -= newSize.height - frame.size.height
         frame.size.height = newSize.height
@@ -152,7 +171,8 @@ public class MBPopupController: NSWindowController {
             frame.size.width = newSize.width
         }
 
-        panel.setFrame(frame, display: true, animate: true)
+        containerView.resetConstraints()
+        panel.setFrame(frame, display: true, animate: panel.isVisible)
     }
 
     // MARK: Controlling the Panel
