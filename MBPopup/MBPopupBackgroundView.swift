@@ -19,9 +19,11 @@ public class MBPopupBackgroundView: NSView {
     public var cornerRadius: CGFloat = 6
     public var backgroundColor = NSColor.windowBackgroundColor
 
+    var arrowSize = CGSize(width: 12, height: 8)
+
     private let kappa: CGFloat = 0.55
 
-    public var arrowX: CGFloat = 0 {
+    var arrowX: CGFloat = 0 {
         didSet {
             self.needsDisplay = true
         }
@@ -33,13 +35,13 @@ public class MBPopupBackgroundView: NSView {
 
         let maxX = contentRect.maxX
         let minX = contentRect.minX
-        let maxY = contentRect.maxY - MBPopup.arrowSize.height
+        let maxY = contentRect.maxY - arrowSize.height
         let minY = contentRect.minY
         let cornerControlPoint: CGFloat = -cornerRadius + (cornerRadius * kappa)
 
         // Arrow
         path.move(to: CGPoint(x: arrowX, y: contentRect.maxY))
-        path.line(to: CGPoint(x: arrowX + MBPopup.arrowSize.width / 2, y: maxY))
+        path.line(to: CGPoint(x: arrowX + arrowSize.width / 2, y: maxY))
         path.line(to: CGPoint(x: maxX - cornerRadius, y: maxY))
 
         // Top right corner
@@ -68,7 +70,7 @@ public class MBPopupBackgroundView: NSView {
                    controlPoint1: CGPoint(x: minX, y: maxY + cornerControlPoint),
                    controlPoint2: CGPoint(x: minX - cornerControlPoint, y: maxY))
 
-        path.line(to: CGPoint(x: arrowX - MBPopup.arrowSize.width / 2, y: maxY))
+        path.line(to: CGPoint(x: arrowX - arrowSize.width / 2, y: maxY))
         path.close()
 
         backgroundColor.setFill()

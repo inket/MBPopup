@@ -10,9 +10,6 @@ import Foundation
 import Cocoa
 
 public struct MBPopup {
-    public static var openDuration: TimeInterval = 0.15
-    public static var closeDuration: TimeInterval = 0.2
-    public static var arrowSize = CGSize(width: 12, height: 8)
     static var statusItemButton: NSStatusBarButton?
 }
 
@@ -30,6 +27,14 @@ public class MBPopupController: NSWindowController {
     public let backgroundView = MBPopupBackgroundView()
     public var contentView: NSView
 
+    public var openDuration: TimeInterval = 0.15
+    public var closeDuration: TimeInterval = 0.2
+
+    public var arrowSize: CGSize {
+        get { return backgroundView.arrowSize }
+        set { backgroundView.arrowSize = newValue }
+    }
+    
     private(set) public var isOpen: Bool = false {
         didSet {
             // Highlight instantly if the popup is opened, but wait until the popup is closed to unhighlight
@@ -169,10 +174,13 @@ public class MBPopupController: NSWindowController {
         NSApp.activate(ignoringOtherApps: false)
         panel.alphaValue = 0
         panel.setFrame(panelRect, display: true)
+
+        repositionPopupArrow()
+
         panel.makeKeyAndOrderFront(self)
 
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = MBPopup.openDuration
+            context.duration = openDuration
             self.panel.animator().alphaValue = 1
         }, completionHandler: {
             self.isOpening = false
@@ -196,7 +204,7 @@ public class MBPopupController: NSWindowController {
         contentView.isHidden = true
 
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = MBPopup.closeDuration
+            context.duration = closeDuration
             self.panel.animator().alphaValue = 0
         }, completionHandler: {
             guard !self.isOpen else { return }
@@ -225,16 +233,26 @@ public class MBPopupController: NSWindowController {
         let statusRect = self.statusRect(forWindow: panel)
 
         var panelRect = panel.frame
-        panelRect.size.height = contentView.frame.height + 2 + MBPopup.arrowSize.height
-        panelRect.size.width = contentView.frame.width + 2
         panelRect.origin.x = round(statusRect.midX - panelRect.width / 2)
-        panelRect.origin.y = statusRect.maxY - panelRect.height
+        panelRect.origin.y = statusRect.maxY - panelRect.size.height
 
-        if panelRect.maxX > (screenRect.maxX - MBPopup.arrowSize.height) {
-            panelRect.origin.x -= panelRect.maxX - (screenRect.maxX - MBPopup.arrowSize.height)
+        if panelRect.maxX > (screenRect.maxX - arrowSize.height) {
+            panelRect.origin.x -= panelRect.maxX - (screenRect.maxX - arrowSize.height)
         }
 
         return (screenRect, statusRect, panelRect)
+    }
+
+    // MARK: Repositioning/Resizing Views when needed
+
+    func repositionPopupArrow() {
+        let statusRect = self.statusRect(forWindow: panel)
+        let panelRect = panel.frame
+
+        let statusX = round(statusRect.midX)
+        let panelX = statusX - panelRect.minX
+
+        backgroundView.arrowX = panelX
     }
 
     // MARK: Deinitializing
@@ -265,13 +283,7 @@ extension MBPopupController: NSWindowDelegate {
     }
 
     public func windowDidResize(_ notification: Notification) {
-        let statusRect = self.statusRect(forWindow: panel)
-        let panelRect = panel.frame
-
-        let statusX = round(statusRect.midX)
-        let panelX = statusX - panelRect.minX
-
-        backgroundView.arrowX = panelX
+        repositionPopupArrow()
     }
 }
 

@@ -22,14 +22,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        MBPopup.openDuration = 0.15 // Default value
-        MBPopup.closeDuration = 0.2 // Default value
-        MBPopup.arrowSize = CGSize(width: 12, height: 8) // Default value
-
         popupController.statusItem.title = "MBPopup"
         popupController.statusItem.length = 70
+
         popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value
         popupController.backgroundView.inset = 1 // Default value
+
+        popupController.openDuration = 0.15 // Default value
+        popupController.closeDuration = 0.2 // Default value
+        popupController.arrowSize = CGSize(width: 12, height: 8) // Default value
 
         popupController.willOpenPopup = { keys in
             var labelText = "Hi!"
