@@ -14,7 +14,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let popupController: MBPopupController
     let myView: NSView
     let label = NSTextField(frame: CGRect(x: 0, y: 175, width: 200, height: 50))
-    let secondStatusItem = NSStatusBar.system().statusItem(withLength: 30)
 
     override init() {
         // You can set the initial size this way, or later using `resizePopup`
@@ -71,11 +70,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         resizeButton.target = self
         resizeButton.action = #selector(AppDelegate.resize)
         myView.addSubview(resizeButton)
-
-        secondStatusItem.title = "normal"
-        secondStatusItem.length = 60
-        secondStatusItem.menu = NSMenu()
-        secondStatusItem.menu?.addItem(withTitle: "Normal status item is unaffected", action: nil, keyEquivalent: "")
     }
 
     func resize() {
