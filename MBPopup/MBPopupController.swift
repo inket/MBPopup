@@ -246,8 +246,12 @@ public class MBPopupController: NSWindowController {
     }
 
     private func rects(forPanel panel: NSPanel) -> (screenRect: CGRect, statusRect: CGRect, panelRect: CGRect) {
+        // Get the screen containing the status item that was clicked by the user
+        // If no click happened (panel opened programmatically), use the main screen
         let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow
-        guard let screen = statusItemWindow?.screen else { return (CGRect.zero, CGRect.zero, CGRect.zero) }
+        guard let screen = statusItemWindow?.screen ?? NSScreen.main() else {
+            return (CGRect.zero, CGRect.zero, CGRect.zero)
+        }
 
         let screenRect = screen.frame
         let statusRect = self.statusRect(forWindow: panel)
