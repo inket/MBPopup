@@ -41,7 +41,7 @@ public class MBPopupController: NSWindowController {
         set {
             let size = containerView.frame.size
             containerView.contentInset = newValue
-            resizePopup(to: size)
+            resizePopup(width: size.width, height: size.height)
         }
     }
 
@@ -128,7 +128,7 @@ public class MBPopupController: NSWindowController {
 
         panel.initialFirstResponder = contentView
 
-        resizePopup(to: contentSize)
+        resizePopup(width: contentSize.width, height: contentSize.height)
     }
 
     // MARK: Actions
@@ -153,12 +153,13 @@ public class MBPopupController: NSWindowController {
      Resizes the panel (animated). Although the background view will be resized with the panel, your content view will
      not be, unless it's using auto-layout constraints to match the background view's size.
 
-     - parameter newSize: The desired size
+     - parameter width: The desired width
+     - parameter height: The desired height
      */
-    public func resizePopup(to size: CGSize) {
+    public func resizePopup(width: CGFloat, height: CGFloat) {
         var frame = panel.frame
 
-        var newSize = size
+        var newSize = CGSize(width: width, height: height)
         newSize.height += arrowSize.height + contentInset * 2
         newSize.width += contentInset * 2
 
@@ -173,6 +174,26 @@ public class MBPopupController: NSWindowController {
 
         containerView.resetConstraints()
         panel.setFrame(frame, display: true, animate: panel.isVisible)
+    }
+
+    /**
+     Resizes the panel (animated). Although the background view will be resized with the panel, your content view will
+     not be, unless it's using auto-layout constraints to match the background view's size.
+
+     - parameter width: The desired width
+     */
+    public func resizePopup(width: CGFloat) {
+        resizePopup(width: width, height: contentView.frame.size.height)
+    }
+
+    /**
+     Resizes the panel (animated). Although the background view will be resized with the panel, your content view will
+     not be, unless it's using auto-layout constraints to match the background view's size.
+
+     - parameter height: The desired height
+     */
+    public func resizePopup(height: CGFloat) {
+        resizePopup(width: contentView.frame.size.width, height: height)
     }
 
     // MARK: Controlling the Panel

@@ -74,9 +74,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func resize() {
         if myView.frame.size.height == 400 {
-            popupController.resizePopup(to: CGSize(width: 200, height: 300))
+            popupController.resizePopup(width: 200, height: 300)
         } else {
-            popupController.resizePopup(to: CGSize(width: 300, height: 400))
+            popupController.resizePopup(width: 300, height: 400)
         }
     }
 }
