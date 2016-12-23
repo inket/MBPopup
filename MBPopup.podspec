@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "MBPopup"
-  s.version          = "0.1.0"
+  s.version          = "1.0.0"
   s.summary          = "macOS status bar popups done right."
 
 # This description is used to generate tags and improve search results.
@@ -18,8 +18,7 @@ Pod::Spec.new do |s|
 #   * Finally, don"t worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-The summary is enough. I thought that was the case, but `pod lib lint` told me that it's not.
-So here I am, just padding text because I can't think of anything to say.
+MBPopup is a macOS framework for easily adding a customizable status bar popup to your apps.
                        DESC
 
   s.homepage         = "https://github.com/inket"
