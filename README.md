@@ -20,7 +20,7 @@ While also,
 - Providing callbacks for user actions
 - Allowing for different states when modifier keys are used
 
-MBPopup App Store-approved and is currently being used in the app [stts](https://itunes.apple.com/app/stts/id1187772509?ls=1&mt=12):
+MBPopup is App Store-approved and is currently being used in the app [stts](https://itunes.apple.com/app/stts/id1187772509?ls=1&mt=12):
 
 <img src="https://i.imgur.com/OAK3hR0.png" width="218" height="324" />
 
@@ -70,7 +70,7 @@ popupController.didOpenPopup = { debugPrint("Opened popup!") }
 popupController.willClosePopup = { debugPrint("Will close popup!") }
 popupController.didClosePopup = { debugPrint("Closed popup!") }
 
-// Resize your popup as your like
+// Resize your popup to your liking
 popupController.resizePopup(width: 300, height: 400)
 ```
 
