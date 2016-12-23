@@ -2,9 +2,6 @@
 //  MBPopupExtensions.swift
 //  MBPopup
 //
-//  Created by Mahdi Bchetnia on 16/8/25.
-//  Copyright © 2016 Mahdi Bchetnia. See LICENSE.
-//
 
 import Foundation
 import Cocoa

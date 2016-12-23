@@ -2,9 +2,6 @@
 //  MBPopup.h
 //  MBPopup
 //
-//  Created by inket on 25/8/16.
-//  Copyright © 2016 inket. All rights reserved.
-//
 
 #import <Cocoa/Cocoa.h>
 

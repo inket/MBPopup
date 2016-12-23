@@ -2,9 +2,6 @@
 //  AppDelegate.swift
 //  Example
 //
-//  Created by Mahdi Bchetnia on 16/8/25.
-//  Copyright © 2016 Mahdi Bchetnia. See LICENSE.
-//
 
 import Cocoa
 import MBPopup
