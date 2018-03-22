@@ -8,10 +8,10 @@ import Cocoa
 
 extension NSEvent {
     var pressedModifiers: MBPopupKeys {
-        let clearFlags = self.modifierFlags.rawValue & NSEventModifierFlags.deviceIndependentFlagsMask.rawValue
-        let shiftFlags = NSEventModifierFlags.shift.rawValue
-        let optionFlags = NSEventModifierFlags.option.rawValue
-        let shiftOptionFlags = NSEventModifierFlags.shift.rawValue | NSEventModifierFlags.option.rawValue
+        let clearFlags = self.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue
+        let shiftFlags = NSEvent.ModifierFlags.shift.rawValue
+        let optionFlags = NSEvent.ModifierFlags.option.rawValue
+        let shiftOptionFlags = NSEvent.ModifierFlags.shift.rawValue | NSEvent.ModifierFlags.option.rawValue
 
         if clearFlags == shiftOptionFlags {
             return .shiftOption

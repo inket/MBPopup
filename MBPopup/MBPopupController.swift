@@ -18,7 +18,7 @@ public enum MBPopupKeys {
 }
 
 public class MBPopupController: NSWindowController {
-    public let statusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
+    public let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     public let panel = MBPopupPanel()
 
     public let backgroundView = MBPopupBackgroundView()
@@ -108,7 +108,7 @@ public class MBPopupController: NSWindowController {
 
         panel.windowController = self
         panel.acceptsMouseMovedEvents = true
-        panel.level = Int(CGWindowLevelForKey(CGWindowLevelKey.popUpMenuWindow))
+        panel.level = .popUpMenu
         panel.isOpaque = false
         panel.backgroundColor = NSColor.clear
         panel.styleMask = .nonactivatingPanel
@@ -267,7 +267,7 @@ public class MBPopupController: NSWindowController {
         // Get the screen containing the status item that was clicked by the user
         // If no click happened (panel opened programmatically), use the main screen
         let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow
-        guard let screen = statusItemWindow?.screen ?? NSScreen.main() else {
+        guard let screen = statusItemWindow?.screen ?? NSScreen.main else {
             return (CGRect.zero, CGRect.zero, CGRect.zero)
         }
 
@@ -308,7 +308,7 @@ public class MBPopupController: NSWindowController {
             NSEvent.removeMonitor(monitor)
         }
 
-        NSStatusBar.system().removeStatusItem(statusItem)
+        NSStatusBar.system.removeStatusItem(statusItem)
     }
 }
 
