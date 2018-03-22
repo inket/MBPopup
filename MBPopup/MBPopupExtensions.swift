@@ -90,8 +90,9 @@ extension NSStatusItem {
     func shouldTrigger(forEvent event: NSEvent) -> Bool {
         let sameButton = button != nil && button == event.clickedStatusItem?.realItem?.button
         let sameWindow = event.window != nil && event.window == event.clickedStatusItem?.realWindow
+        let bartenderEvent = event.eventNumber == 1337
 
-        return sameButton && sameWindow
+        return sameButton && sameWindow && !bartenderEvent
     }
 }
 
