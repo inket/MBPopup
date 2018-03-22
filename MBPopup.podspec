@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "MBPopup"
-  s.version          = "1.0.2"
+  s.version          = "1.1.0"
   s.summary          = "macOS status bar popups done right."
 
 # This description is used to generate tags and improve search results.
@@ -30,4 +30,5 @@ MBPopup is a macOS framework for easily adding a customizable status bar popup t
   s.platform = :osx, "10.10"
 
   s.source_files = "MBPopup/**/*.swift"
+  s.swift_version = "4.0.2"
 end
