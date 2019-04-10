@@ -1,5 +1,5 @@
 ## MBPopup
-![](https://img.shields.io/badge/Swift-4.0-orange.svg) ![](https://img.shields.io/badge/Carthage-supported-brightgreen.svg) ![](https://img.shields.io/badge/CocoaPods-supported-brightgreen.svg)
+![](https://img.shields.io/badge/Swift-5.0-orange.svg) ![](https://img.shields.io/badge/Carthage-supported-brightgreen.svg) ![](https://img.shields.io/badge/CocoaPods-supported-brightgreen.svg)
 
 MBPopup is a macOS framework for easily adding a customizable status bar popup to your apps.
 
