@@ -69,7 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         myView.addSubview(resizeButton)
     }
 
-    func resize() {
+    @objc func resize() {
         if myView.frame.size.height == 400 {
             popupController.resizePopup(width: 200, height: 300)
         } else {
