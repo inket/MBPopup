@@ -30,4 +30,5 @@ MBPopup is a macOS framework for easily adding a customizable status bar popup t
   s.platform = :osx, "10.10"
 
   s.source_files = "MBPopup/**/*.swift"
+  s.swift_version = "5.1"
 end
