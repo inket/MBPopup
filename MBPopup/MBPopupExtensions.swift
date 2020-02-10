@@ -92,7 +92,9 @@ extension NSStatusItem {
         let sameWindow = event.window != nil && event.window == event.clickedStatusItem?.realWindow
         let bartenderEvent = event.eventNumber == 1337
 
-        return sameButton && sameWindow && !bartenderEvent
+        let isMoveEvent = event.modifierFlags.contains(.command) && event.type == .leftMouseDown
+
+        return sameButton && sameWindow && !bartenderEvent && !isMoveEvent
     }
 }
 
