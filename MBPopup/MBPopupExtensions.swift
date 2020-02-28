@@ -92,7 +92,11 @@ extension NSStatusItem {
         let sameWindow = event.window != nil && event.window == event.clickedStatusItem?.realWindow
         let bartenderEvent = event.eventNumber == 1337
 
-        let isMoveEvent = event.modifierFlags.contains(.command) && event.type == .leftMouseDown
+        // Command-click is used to move the status bar item in newer macOS versions, so we shouldn't open the popup
+        // in that case. This doesn't apply when other modifiers are pressed (like command-opt-click)
+        let isMoveEvent =
+            event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command
+            && event.type == .leftMouseDown
 
         return sameButton && sameWindow && !bartenderEvent && !isMoveEvent
     }
