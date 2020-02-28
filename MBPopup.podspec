@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "MBPopup"
-  s.version          = "5.0.2"
+  s.version          = "5.0.3"
   s.summary          = "macOS status bar popups done right."
 
 # This description is used to generate tags and improve search results.
