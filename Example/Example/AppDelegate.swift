@@ -31,6 +31,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popupController.arrowSize = CGSize(width: 12, height: 8) // Default value
         popupController.contentInset = 1 // Default value
 
+        // Controlling whether the popup should open or not depending on the pressed modifiers (optional)
+        popupController.shouldOpenPopup = { keys in
+            switch keys {
+            case .shiftOption:
+                return false
+            default:
+                return true
+            }
+        }
+
+        // Knowing when the popup is about to open, and detecting what modifiers were pressed
         popupController.willOpenPopup = { keys in
             var labelText = "Hi!"
 

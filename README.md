@@ -64,7 +64,8 @@ popupController.closeDuration = 0.2 // Default value
 popupController.arrowSize = CGSize(width: 12, height: 8) // Default value
 popupController.contentInset = 1 // Default value
 
-// Use callbacks to user actions
+// Use callbacks to user actions (optional)
+popupController.shouldOpenPopup = { keys in return true }
 popupController.willOpenPopup = { keys in debugPrint("Will open popup!") }
 popupController.didOpenPopup = { debugPrint("Opened popup!") }
 popupController.willClosePopup = { debugPrint("Will close popup!") }

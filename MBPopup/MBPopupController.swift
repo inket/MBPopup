@@ -52,6 +52,7 @@ public class MBPopupController: NSWindowController {
     }
     fileprivate var isOpening: Bool = false
 
+    public var shouldOpenPopup: ((MBPopupKeys) -> Bool)?
     public var willOpenPopup: ((MBPopupKeys) -> Void)?
     public var didOpenPopup: (() -> Void)?
     public var willClosePopup: (() -> Void)?
@@ -86,7 +87,11 @@ public class MBPopupController: NSWindowController {
         MBPopup.statusItemButton = statusItem.button
 
         self.mouseDownEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
-            if self?.statusItem.shouldTrigger(forEvent: event) == true {
+            let shouldOpenPopup =
+                self?.statusItem.shouldTrigger(forEvent: event) == true
+                && self?.shouldOpenPopup?(event.pressedModifiers) ?? true
+
+            if shouldOpenPopup {
                 self?.lastMouseDownEvent = event
                 self?.togglePopup()
             }
