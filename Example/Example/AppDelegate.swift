@@ -21,7 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        popupController.statusItem.title = "MBPopup"
+        popupController.statusItem.button?.title = "MBPopup"
         popupController.statusItem.length = 70
 
         popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value

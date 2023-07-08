@@ -1,5 +1,5 @@
 ## MBPopup
-![](https://img.shields.io/badge/Swift-5.1-orange.svg) ![](https://img.shields.io/badge/Carthage-supported-brightgreen.svg) ![](https://img.shields.io/badge/CocoaPods-supported-brightgreen.svg)
+![](https://img.shields.io/badge/Swift-5.8-orange.svg) ![](https://img.shields.io/badge/SwiftPM-supported-brightgreen.svg)
 
 MBPopup is a macOS framework for easily adding a customizable status bar popup to your apps.
 
@@ -29,21 +29,9 @@ MBPopup is App Store-approved and is currently being used in the app [stts](http
 
 (For more examples, check the __Example__ project, or [stts' source](https://github.com/inket/stts))
 
-Add MBPopup via Carthage:
+1. Add MBPopup via Swift Package Manager
 
-__Cartfile__
-```
-github "inket/MBPopup"
-```
-
-or via CocoaPods:
-
-__Podfile__
-```
-pod "MBPopup"
-```
-
-Use MBPopup in your app:
+2. Use MBPopup in your app:
 
 ```swift
 import MBPopup
@@ -52,7 +40,7 @@ let myView = NSView(frame: CGRect(x: 0, y: 0, width: 200, height: 300))
 let popupController = MBPopupController(contentView: myView)
 
 // Use popupController.statusItem to customize the NSStatusItem, set a title or an image
-popupController.statusItem.title = "Test"
+popupController.statusItem.button?.title = "Test"
 popupController.statusItem.length = 70
 
 // Use popupController.backgroundView to customize the popup's background
@@ -77,4 +65,4 @@ popupController.resizePopup(width: 300, height: 400)
 
 #### Contact
 
-[@inket](https://github.com/inket) / [@inket](https://twitter.com/inket) on Twitter / [mahdi.jp](https://mahdi.jp)
+[@inket](https://github.com/inket) / [@inket](https://mastodon.social/inket) on Mastodon / [mahdi.jp](https://mahdi.jp)

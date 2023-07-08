@@ -3,33 +3,15 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B20883E22A591026007578C8 /* MBPopup in Frameworks */ = {isa = PBXBuildFile; productRef = B20883E12A591026007578C8 /* MBPopup */; };
 		B22A58DA1D6ED381003F57B3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22A58D91D6ED381003F57B3 /* AppDelegate.swift */; };
 		B22A58DC1D6ED381003F57B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B22A58DB1D6ED381003F57B3 /* Assets.xcassets */; };
 		B22A58DF1D6ED381003F57B3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B22A58DD1D6ED381003F57B3 /* MainMenu.xib */; };
-		B22A58F31D6EDA6B003F57B3 /* MBPopup.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B22A58F01D6EDA5F003F57B3 /* MBPopup.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		B22A58F41D6EDA77003F57B3 /* MBPopup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B22A58F01D6EDA5F003F57B3 /* MBPopup.framework */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		B22A58EF1D6EDA5F003F57B3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B22A58EB1D6EDA5F003F57B3 /* MBPopup.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = B22A58AB1D6EC90A003F57B3;
-			remoteInfo = MBPopup;
-		};
-		B22A58F11D6EDA66003F57B3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B22A58EB1D6EDA5F003F57B3 /* MBPopup.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = B22A58AA1D6EC90A003F57B3;
-			remoteInfo = MBPopup;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		B22A58E91D6ED44B003F57B3 /* CopyFiles */ = {
@@ -38,19 +20,18 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				B22A58F31D6EDA6B003F57B3 /* MBPopup.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B20883DF2A59101A007578C8 /* MBPopup */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = MBPopup; path = ..; sourceTree = "<group>"; };
 		B22A58D61D6ED381003F57B3 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B22A58D91D6ED381003F57B3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B22A58DB1D6ED381003F57B3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B22A58DE1D6ED381003F57B3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		B22A58E01D6ED381003F57B3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B22A58EB1D6EDA5F003F57B3 /* MBPopup.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MBPopup.xcodeproj; path = ../MBPopup.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,19 +39,35 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B22A58F41D6EDA77003F57B3 /* MBPopup.framework in Frameworks */,
+				B20883E22A591026007578C8 /* MBPopup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B20883DE2A59101A007578C8 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				B20883DF2A59101A007578C8 /* MBPopup */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		B20883E02A591026007578C8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B22A58CD1D6ED381003F57B3 = {
 			isa = PBXGroup;
 			children = (
-				B22A58EB1D6EDA5F003F57B3 /* MBPopup.xcodeproj */,
+				B20883DE2A59101A007578C8 /* Packages */,
 				B22A58D81D6ED381003F57B3 /* Example */,
 				B22A58D71D6ED381003F57B3 /* Products */,
+				B20883E02A591026007578C8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -93,14 +90,6 @@
 			path = Example;
 			sourceTree = "<group>";
 		};
-		B22A58EC1D6EDA5F003F57B3 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				B22A58F01D6EDA5F003F57B3 /* MBPopup.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -112,14 +101,15 @@
 				B22A58E91D6ED44B003F57B3 /* CopyFiles */,
 				B22A58D31D6ED381003F57B3 /* Frameworks */,
 				B22A58D41D6ED381003F57B3 /* Resources */,
-				B21E0B5A1DCC7BD900E06113 /* ShellScript */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B22A58F21D6EDA66003F57B3 /* PBXTargetDependency */,
 			);
 			name = Example;
+			packageProductDependencies = (
+				B20883E12A591026007578C8 /* MBPopup */,
+			);
 			productName = Example;
 			productReference = B22A58D61D6ED381003F57B3 /* Example.app */;
 			productType = "com.apple.product-type.application";
@@ -130,14 +120,13 @@
 		B22A58CE1D6ED381003F57B3 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 0800;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1430;
 				ORGANIZATIONNAME = inket;
 				TargetAttributes = {
 					B22A58D51D6ED381003F57B3 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = PP5UYHJQCD;
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -152,28 +141,12 @@
 			mainGroup = B22A58CD1D6ED381003F57B3;
 			productRefGroup = B22A58D71D6ED381003F57B3 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = B22A58EC1D6EDA5F003F57B3 /* Products */;
-					ProjectRef = B22A58EB1D6EDA5F003F57B3 /* MBPopup.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				B22A58D51D6ED381003F57B3 /* Example */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		B22A58F01D6EDA5F003F57B3 /* MBPopup.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = MBPopup.framework;
-			remoteRef = B22A58EF1D6EDA5F003F57B3 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		B22A58D41D6ED381003F57B3 /* Resources */ = {
@@ -187,22 +160,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		B21E0B5A1DCC7BD900E06113 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\nswiftlint\nelse\necho \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		B22A58D21D6ED381003F57B3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -213,14 +170,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		B22A58F21D6EDA66003F57B3 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = MBPopup;
-			targetProxy = B22A58F11D6EDA66003F57B3 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		B22A58DD1D6ED381003F57B3 /* MainMenu.xib */ = {
@@ -259,6 +208,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -267,6 +217,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -284,7 +235,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -318,6 +269,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -326,6 +278,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -337,10 +290,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Release;
 		};
@@ -349,13 +303,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = PP5UYHJQCD;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Example/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				PRODUCT_BUNDLE_IDENTIFIER = jp.mahdi.Example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -365,13 +326,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = PP5UYHJQCD;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Example/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				PRODUCT_BUNDLE_IDENTIFIER = jp.mahdi.Example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -398,6 +366,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B20883E12A591026007578C8 /* MBPopup */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MBPopup;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B22A58CE1D6ED381003F57B3 /* Project object */;
 }
