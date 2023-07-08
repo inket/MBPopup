@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "MBPopup",
     platforms: [
-        .macOS("10.4.6"), // Minimum version supported by Xcode 14.3
+        .macOS("10.14.6"), // Minimum version supported by Xcode 14.3
     ],
     products: [
         .library(
