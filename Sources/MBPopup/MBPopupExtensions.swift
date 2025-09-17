@@ -38,23 +38,31 @@ extension NSEvent {
 
 extension NSStatusItem {
     var realItem: NSStatusItem? {
-        if className == "NSStatusItem" {
+        if #available(macOS 15.0, *) {
             return self
         } else {
-            // In the case of an NSStatusItemReplicant (a replica for displaying the status item on inactive
-            // spaces/screens that happens to be an NSStatusItem subclass), we get the NSStatusItem that's being
-            // replicated from the property "parentItem".
-            return value(forKey: "parentItem") as? NSStatusItem
+            if className == "NSStatusItem" {
+                return self
+            } else {
+                // In the case of an NSStatusItemReplicant (a replica for displaying the status item on inactive
+                // spaces/screens that happens to be an NSStatusItem subclass), we get the NSStatusItem that's being
+                // replicated from the property "parentItem".
+                return value(forKey: "parentItem") as? NSStatusItem
+            }
         }
     }
 
     var realWindow: NSWindow? {
-        if className == "NSStatusItem" {
+        if #available(macOS 15.0, *) {
             return button?.window
         } else {
-            // In the case of an NSStatusItemReplicant, we get the window from the property "window"
-            // as using button?.window will return the original status item's window.
-            return value(forKey: "window") as? NSWindow
+            if className == "NSStatusItem" {
+                return button?.window
+            } else {
+                // In the case of an NSStatusItemReplicant, we get the window from the property "window"
+                // as using button?.window will return the original status item's window.
+                return value(forKey: "window") as? NSWindow
+            }
         }
     }
 
