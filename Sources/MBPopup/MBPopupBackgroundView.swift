@@ -5,9 +5,17 @@
 
 import Foundation
 import Cocoa
+import SwiftUI
 
 public class MBPopupBackgroundView: NSView {
-    public var cornerRadius: CGFloat = 6
+    /// Matches the corner radius of status item menus: 12 on macOS 26 and later, 6 on macOS 14–15
+    public var cornerRadius: CGFloat = MBPopupBackgroundView.defaultCornerRadius {
+        didSet {
+            self.needsDisplay = true
+            subviews.forEach { $0.needsLayout = true }
+        }
+    }
+
     public var backgroundColor = NSColor.windowBackgroundColor
 
     var arrowSize = CGSize(width: 12, height: 8)
@@ -22,61 +30,45 @@ public class MBPopupBackgroundView: NSView {
         return showsArrow ? arrowSize : .zero
     }
 
-    private let kappa: CGFloat = 0.55
-
     var arrowX: CGFloat = 0 {
         didSet {
             self.needsDisplay = true
         }
     }
 
+    static var defaultCornerRadius: CGFloat {
+        if #available(macOS 26.0, *) {
+            return 12
+        } else {
+            return 6
+        }
+    }
+
     public override func draw(_ dirtyRect: NSRect) {
-        let contentRect = self.bounds
-        let path = NSBezierPath()
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+
         let arrowSize = visibleArrowSize
+        var bodyRect = self.bounds
+        bodyRect.size.height -= arrowSize.height
 
-        let maxX = contentRect.maxX
-        let minX = contentRect.minX
-        let maxY = contentRect.maxY - arrowSize.height
-        let minY = contentRect.minY
-        let cornerControlPoint: CGFloat = -cornerRadius + (cornerRadius * kappa)
+        // Continuous ("squircle") corners like system menus and windows
+        let path = CGMutablePath()
+        path.addPath(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).path(in: bodyRect).cgPath
+        )
 
-        // Arrow
-        path.move(to: CGPoint(x: arrowX, y: contentRect.maxY))
-        path.line(to: CGPoint(x: arrowX + arrowSize.width / 2, y: maxY))
-        path.line(to: CGPoint(x: maxX - cornerRadius, y: maxY))
+        if showsArrow {
+            path.addLines(between: [
+                CGPoint(x: arrowX - arrowSize.width / 2, y: bodyRect.maxY),
+                CGPoint(x: arrowX, y: self.bounds.maxY),
+                CGPoint(x: arrowX + arrowSize.width / 2, y: bodyRect.maxY),
+            ])
+            path.closeSubpath()
+        }
 
-        // Top right corner
-        path.curve(to: CGPoint(x: maxX, y: maxY - cornerRadius),
-                   controlPoint1: CGPoint(x: maxX + cornerControlPoint, y: maxY),
-                   controlPoint2: CGPoint(x: maxX, y: maxY + cornerControlPoint))
-
-        path.line(to: CGPoint(x: maxX, y: minY + cornerRadius))
-
-        // Bottom right corner
-        path.curve(to: CGPoint(x: maxX - cornerRadius, y: minY),
-                   controlPoint1: CGPoint(x: maxX, y: minY - cornerControlPoint),
-                   controlPoint2: CGPoint(x: maxX + cornerControlPoint, y: minY))
-
-        path.line(to: CGPoint(x: minX + cornerRadius, y: minY))
-
-        // Bottom left corner
-        path.curve(to: CGPoint(x: minX, y: minY + cornerRadius),
-                   controlPoint1: CGPoint(x: minX - cornerControlPoint, y: minY),
-                   controlPoint2: CGPoint(x: minX, y: minY - cornerControlPoint))
-
-        path.line(to: CGPoint(x: minX, y: maxY - cornerRadius))
-
-        // Top left corner
-        path.curve(to: CGPoint(x: minX + cornerRadius, y: maxY),
-                   controlPoint1: CGPoint(x: minX, y: maxY + cornerControlPoint),
-                   controlPoint2: CGPoint(x: minX - cornerControlPoint, y: maxY))
-
-        path.line(to: CGPoint(x: arrowX - arrowSize.width / 2, y: maxY))
-        path.close()
-
-        backgroundColor.setFill()
-        path.fill()
+        context.addPath(path)
+        context.setFillColor(backgroundColor.cgColor)
+        context.fillPath()
     }
 }
 
@@ -100,6 +92,17 @@ public class MBPopupContainerView: NSView {
     }
 
     var superviewConstraints = [NSLayoutConstraint]()
+
+    public override func layout() {
+        super.layout()
+
+        // Clip the content to the popup's rounded corners
+        guard let superview = superview as? MBPopupBackgroundView else { return }
+        wantsLayer = true
+        layer?.cornerRadius = max(superview.cornerRadius - contentInset, 0)
+        layer?.cornerCurve = .continuous
+        layer?.masksToBounds = true
+    }
 
     func setup() {
         self.translatesAutoresizingMaskIntoConstraints = false
