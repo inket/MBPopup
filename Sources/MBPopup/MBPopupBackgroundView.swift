@@ -11,17 +11,40 @@ public class MBPopupBackgroundView: NSView {
     /// Matches the corner radius of status item menus: 12 on macOS 26 and later, 6 on macOS 14–15
     public var cornerRadius: CGFloat = MBPopupBackgroundView.defaultCornerRadius {
         didSet {
-            self.needsDisplay = true
+            updateGlassEffect()
             subviews.forEach { $0.needsLayout = true }
         }
     }
 
-    public var backgroundColor = NSColor.windowBackgroundColor
+    /// Whether to use a Liquid Glass background like status item menus, on macOS 26 and later. The glass can't take
+    /// the shape of the arrow, so `backgroundColor` is used instead while `showsArrow` is enabled.
+    public var usesGlassEffect = false {
+        didSet {
+            updateGlassEffect()
+        }
+    }
+
+    /// The background color, when not using the glass effect
+    public var backgroundColor = NSColor.windowBackgroundColor {
+        didSet {
+            self.needsDisplay = true
+        }
+    }
 
     var arrowSize = CGSize(width: 12, height: 8)
     var showsArrow = false {
         didSet {
-            self.needsDisplay = true
+            updateGlassEffect()
+        }
+    }
+
+    private var glassEffectView: NSView?
+
+    private var showsGlassEffect: Bool {
+        if #available(macOS 26.0, *) {
+            return usesGlassEffect && !showsArrow
+        } else {
+            return false
         }
     }
 
@@ -36,6 +59,61 @@ public class MBPopupBackgroundView: NSView {
         }
     }
 
+    public override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        updateGlassEffect()
+    }
+
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        updateGlassEffect()
+    }
+
+    private func updateGlassEffect() {
+        needsDisplay = true
+
+        guard #available(macOS 26.0, *), showsGlassEffect else {
+            glassEffectView?.removeFromSuperview()
+            glassEffectView = nil
+            layer?.mask = nil
+            return
+        }
+
+        let glassEffectView = (self.glassEffectView as? NSGlassEffectView) ?? NSGlassEffectView(frame: bounds)
+        glassEffectView.style = .regular
+        glassEffectView.cornerRadius = cornerRadius
+        glassEffectView.autoresizingMask = [.width, .height]
+
+        if glassEffectView.superview == nil {
+            glassEffectView.frame = bounds
+            addSubview(glassEffectView, positioned: .below, relativeTo: nil)
+        }
+
+        self.glassEffectView = glassEffectView
+
+        // The glass covers the whole rectangle as far as the window server is concerned, which gives the window a
+        // rectangular shadow/border. Clip to the rounded shape so the corners are transparent.
+        wantsLayer = true
+        let mask = (layer?.mask) ?? CALayer()
+        // Follow the view's size immediately, since implicit animations would make the popup lag behind when resizing
+        mask.actions = ["bounds": NSNull(), "position": NSNull(), "cornerRadius": NSNull()]
+        mask.backgroundColor = NSColor.black.cgColor
+        mask.cornerRadius = cornerRadius
+        mask.cornerCurve = .continuous
+        mask.frame = bounds
+        layer?.mask = mask
+        window?.invalidateShadow()
+    }
+
+    public override func layout() {
+        super.layout()
+
+        if let mask = layer?.mask {
+            mask.frame = bounds
+            window?.invalidateShadow()
+        }
+    }
+
     static var defaultCornerRadius: CGFloat {
         if #available(macOS 26.0, *) {
             return 12
@@ -45,7 +123,7 @@ public class MBPopupBackgroundView: NSView {
     }
 
     public override func draw(_ dirtyRect: NSRect) {
-        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        guard !showsGlassEffect, let context = NSGraphicsContext.current?.cgContext else { return }
 
         let arrowSize = visibleArrowSize
         var bodyRect = self.bounds

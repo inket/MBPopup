@@ -44,7 +44,8 @@ popupController.statusItem.button?.title = "Test"
 popupController.statusItem.length = 70
 
 // Use popupController.backgroundView to customize the popup's background
-popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value
+popupController.backgroundView.usesGlassEffect = false // Default value, set to true for Liquid Glass on macOS 26+
+popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value, when not using glass
 
 // Customize animations, view sizes
 popupController.openDuration = 0.15 // Default value

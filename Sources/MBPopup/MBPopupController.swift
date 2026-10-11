@@ -253,6 +253,7 @@ public class MBPopupController: NSWindowController {
         repositionPopupArrow()
 
         panel.makeKeyAndOrderFront(self)
+        panel.invalidateShadow()
 
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = openDuration

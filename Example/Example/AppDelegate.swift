@@ -25,6 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popupController.statusItem.button?.title = "MBPopup"
         popupController.statusItem.length = 70
 
+        popupController.backgroundView.usesGlassEffect = true // Liquid Glass on macOS 26+ (default: false)
         popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value
 
         popupController.openDuration = 0.15 // Default value
