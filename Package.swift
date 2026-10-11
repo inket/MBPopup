@@ -1,4 +1,4 @@
-// swift-tools-version: 5.8
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "MBPopup",
     platforms: [
-        .macOS("10.14.6"), // Minimum version supported by Xcode 14.3
+        .macOS(.v14),
     ],
     products: [
         .library(

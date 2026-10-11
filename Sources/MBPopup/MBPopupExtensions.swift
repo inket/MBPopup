@@ -6,6 +6,7 @@
 import Foundation
 import Cocoa
 
+@MainActor
 extension NSEvent {
     var pressedModifiers: MBPopupKeys {
         let clearFlags = self.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue
@@ -36,6 +37,7 @@ extension NSEvent {
     }
 }
 
+@MainActor
 extension NSStatusItem {
     var realItem: NSStatusItem? {
         if #available(macOS 15.0, *) {

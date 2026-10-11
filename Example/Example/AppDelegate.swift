@@ -6,7 +6,8 @@
 import Cocoa
 import MBPopup
 
-@NSApplicationMain
+@main
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     let popupController: MBPopupController
     let myView: NSView

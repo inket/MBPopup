@@ -7,7 +7,7 @@ import Foundation
 import Cocoa
 
 public struct MBPopup {
-    static var statusItemButton: NSStatusBarButton?
+    @MainActor static var statusItemButton: NSStatusBarButton?
 }
 
 public enum MBPopupKeys {
@@ -214,7 +214,7 @@ public class MBPopupController: NSWindowController {
         contentView.isHidden = false
         let (_, _, panelRect) = rects(forPanel: panel)
 
-        NSApp.activate(ignoringOtherApps: false)
+        NSApp.activate()
         panel.alphaValue = 0
         panel.setFrame(panelRect, display: true)
 
@@ -226,15 +226,19 @@ public class MBPopupController: NSWindowController {
             context.duration = openDuration
             self.panel.animator().alphaValue = 1
         }, completionHandler: {
-            self.isOpening = false
+            // AppKit calls animation completion handlers on the main thread
+            MainActor.assumeIsolated {
+                self.isOpening = false
 
-            if self.isOpen {
-                self.didOpenPopup?()
+                if self.isOpen {
+                    self.didOpenPopup?()
 
-                // Trying to open the popup from an inactive space/screen, will open the panel but lose key status
-                // because the system's "active screen change" overrides it. If the panel isn't the key window, clicking
-                // outside it won't close the popup. Therefore, we try to make the panel key _after_ opening it.
-                self.panel.makeKeyAndOrderFront(self)
+                    // Trying to open the popup from an inactive space/screen, will open the panel but lose key status
+                    // because the system's "active screen change" overrides it. If the panel isn't the key window,
+                    // clicking outside it won't close the popup. Therefore, we try to make the panel key _after_
+                    // opening it.
+                    self.panel.makeKeyAndOrderFront(self)
+                }
             }
         })
     }
@@ -250,11 +254,14 @@ public class MBPopupController: NSWindowController {
             context.duration = closeDuration
             self.panel.animator().alphaValue = 0
         }, completionHandler: {
-            guard !self.isOpen else { return }
+            // AppKit calls animation completion handlers on the main thread
+            MainActor.assumeIsolated {
+                guard !self.isOpen else { return }
 
-            self.panel.orderOut(nil)
-            self.statusItem.button?.isHighlighted = false
-            self.didClosePopup?()
+                self.panel.orderOut(nil)
+                self.statusItem.button?.isHighlighted = false
+                self.didClosePopup?()
+            }
         })
     }
 
@@ -304,7 +311,7 @@ public class MBPopupController: NSWindowController {
 
     // MARK: Deinitializing
 
-    deinit {
+    isolated deinit {
         if let monitor = mouseDownEventMonitor {
             NSEvent.removeMonitor(monitor)
         }
