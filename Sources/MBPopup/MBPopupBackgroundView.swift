@@ -5,14 +5,53 @@
 
 import Foundation
 import Cocoa
+import SwiftUI
 
 public class MBPopupBackgroundView: NSView {
-    public var cornerRadius: CGFloat = 6
-    public var backgroundColor = NSColor.windowBackgroundColor
+    /// Matches the corner radius of status item menus: 12 on macOS 26 and later, 6 on macOS 14–15
+    public var cornerRadius: CGFloat = MBPopupBackgroundView.defaultCornerRadius {
+        didSet {
+            updateGlassEffect()
+            subviews.forEach { $0.needsLayout = true }
+        }
+    }
+
+    /// Whether to use a Liquid Glass background like status item menus, on macOS 26 and later. The glass can't take
+    /// the shape of the arrow, so `backgroundColor` is used instead while `showsArrow` is enabled.
+    public var usesGlassEffect = false {
+        didSet {
+            updateGlassEffect()
+        }
+    }
+
+    /// The background color, when not using the glass effect
+    public var backgroundColor = NSColor.windowBackgroundColor {
+        didSet {
+            self.needsDisplay = true
+        }
+    }
 
     var arrowSize = CGSize(width: 12, height: 8)
+    var showsArrow = false {
+        didSet {
+            updateGlassEffect()
+        }
+    }
 
-    private let kappa: CGFloat = 0.55
+    private var glassEffectView: NSView?
+
+    private var showsGlassEffect: Bool {
+        if #available(macOS 26.0, *) {
+            return usesGlassEffect && !showsArrow
+        } else {
+            return false
+        }
+    }
+
+    /// The space taken by the arrow, `.zero` when it's hidden
+    var visibleArrowSize: CGSize {
+        return showsArrow ? arrowSize : .zero
+    }
 
     var arrowX: CGFloat = 0 {
         didSet {
@@ -20,52 +59,94 @@ public class MBPopupBackgroundView: NSView {
         }
     }
 
+    public override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        updateGlassEffect()
+    }
+
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        updateGlassEffect()
+    }
+
+    private func updateGlassEffect() {
+        needsDisplay = true
+
+        guard #available(macOS 26.0, *), showsGlassEffect else {
+            glassEffectView?.removeFromSuperview()
+            glassEffectView = nil
+            layer?.mask = nil
+            return
+        }
+
+        let glassEffectView = (self.glassEffectView as? NSGlassEffectView) ?? NSGlassEffectView(frame: bounds)
+        glassEffectView.style = .regular
+        glassEffectView.cornerRadius = cornerRadius
+        glassEffectView.autoresizingMask = [.width, .height]
+
+        if glassEffectView.superview == nil {
+            glassEffectView.frame = bounds
+            addSubview(glassEffectView, positioned: .below, relativeTo: nil)
+        }
+
+        self.glassEffectView = glassEffectView
+
+        // The glass covers the whole rectangle as far as the window server is concerned, which gives the window a
+        // rectangular shadow/border. Clip to the rounded shape so the corners are transparent.
+        wantsLayer = true
+        let mask = (layer?.mask) ?? CALayer()
+        // Follow the view's size immediately, since implicit animations would make the popup lag behind when resizing
+        mask.actions = ["bounds": NSNull(), "position": NSNull(), "cornerRadius": NSNull()]
+        mask.backgroundColor = NSColor.black.cgColor
+        mask.cornerRadius = cornerRadius
+        mask.cornerCurve = .continuous
+        mask.frame = bounds
+        layer?.mask = mask
+        window?.invalidateShadow()
+    }
+
+    public override func layout() {
+        super.layout()
+
+        if let mask = layer?.mask {
+            mask.frame = bounds
+            window?.invalidateShadow()
+        }
+    }
+
+    static var defaultCornerRadius: CGFloat {
+        if #available(macOS 26.0, *) {
+            return 12
+        } else {
+            return 6
+        }
+    }
+
     public override func draw(_ dirtyRect: NSRect) {
-        let contentRect = self.bounds
-        let path = NSBezierPath()
+        guard !showsGlassEffect, let context = NSGraphicsContext.current?.cgContext else { return }
 
-        let maxX = contentRect.maxX
-        let minX = contentRect.minX
-        let maxY = contentRect.maxY - arrowSize.height
-        let minY = contentRect.minY
-        let cornerControlPoint: CGFloat = -cornerRadius + (cornerRadius * kappa)
+        let arrowSize = visibleArrowSize
+        var bodyRect = self.bounds
+        bodyRect.size.height -= arrowSize.height
 
-        // Arrow
-        path.move(to: CGPoint(x: arrowX, y: contentRect.maxY))
-        path.line(to: CGPoint(x: arrowX + arrowSize.width / 2, y: maxY))
-        path.line(to: CGPoint(x: maxX - cornerRadius, y: maxY))
+        // Continuous ("squircle") corners like system menus and windows
+        let path = CGMutablePath()
+        path.addPath(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).path(in: bodyRect).cgPath
+        )
 
-        // Top right corner
-        path.curve(to: CGPoint(x: maxX, y: maxY - cornerRadius),
-                   controlPoint1: CGPoint(x: maxX + cornerControlPoint, y: maxY),
-                   controlPoint2: CGPoint(x: maxX, y: maxY + cornerControlPoint))
+        if showsArrow {
+            path.addLines(between: [
+                CGPoint(x: arrowX - arrowSize.width / 2, y: bodyRect.maxY),
+                CGPoint(x: arrowX, y: self.bounds.maxY),
+                CGPoint(x: arrowX + arrowSize.width / 2, y: bodyRect.maxY),
+            ])
+            path.closeSubpath()
+        }
 
-        path.line(to: CGPoint(x: maxX, y: minY + cornerRadius))
-
-        // Bottom right corner
-        path.curve(to: CGPoint(x: maxX - cornerRadius, y: minY),
-                   controlPoint1: CGPoint(x: maxX, y: minY - cornerControlPoint),
-                   controlPoint2: CGPoint(x: maxX + cornerControlPoint, y: minY))
-
-        path.line(to: CGPoint(x: minX + cornerRadius, y: minY))
-
-        // Bottom left corner
-        path.curve(to: CGPoint(x: minX, y: minY + cornerRadius),
-                   controlPoint1: CGPoint(x: minX - cornerControlPoint, y: minY),
-                   controlPoint2: CGPoint(x: minX, y: minY - cornerControlPoint))
-
-        path.line(to: CGPoint(x: minX, y: maxY - cornerRadius))
-
-        // Top left corner
-        path.curve(to: CGPoint(x: minX + cornerRadius, y: maxY),
-                   controlPoint1: CGPoint(x: minX, y: maxY + cornerControlPoint),
-                   controlPoint2: CGPoint(x: minX - cornerControlPoint, y: maxY))
-
-        path.line(to: CGPoint(x: arrowX - arrowSize.width / 2, y: maxY))
-        path.close()
-
-        backgroundColor.setFill()
-        path.fill()
+        context.addPath(path)
+        context.setFillColor(backgroundColor.cgColor)
+        context.fillPath()
     }
 }
 
@@ -90,6 +171,17 @@ public class MBPopupContainerView: NSView {
 
     var superviewConstraints = [NSLayoutConstraint]()
 
+    public override func layout() {
+        super.layout()
+
+        // Clip the content to the popup's rounded corners
+        guard let superview = superview as? MBPopupBackgroundView else { return }
+        wantsLayer = true
+        layer?.cornerRadius = max(superview.cornerRadius - contentInset, 0)
+        layer?.cornerCurve = .continuous
+        layer?.masksToBounds = true
+    }
+
     func setup() {
         self.translatesAutoresizingMaskIntoConstraints = false
         resetConstraints()
@@ -101,7 +193,7 @@ public class MBPopupContainerView: NSView {
         superview.removeConstraints(superviewConstraints)
 
         let horizontalFormat = "H:|-\(contentInset)-[containerView]-\(contentInset)-|"
-        let verticalFormat = "V:|-\(superview.arrowSize.height + contentInset)-[containerView]-\(contentInset)-|"
+        let verticalFormat = "V:|-\(superview.visibleArrowSize.height + contentInset)-[containerView]-\(contentInset)-|"
 
         let horizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: horizontalFormat,
                                                                    options: .directionLeadingToTrailing,

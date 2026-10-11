@@ -6,22 +6,29 @@
 import Foundation
 import Cocoa
 
-extension NSEvent {
-    var pressedModifiers: MBPopupKeys {
-        let clearFlags = self.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue
+extension MBPopupKeys {
+    init(modifierFlags: NSEvent.ModifierFlags) {
+        let clearFlags = modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue
         let shiftFlags = NSEvent.ModifierFlags.shift.rawValue
         let optionFlags = NSEvent.ModifierFlags.option.rawValue
         let shiftOptionFlags = NSEvent.ModifierFlags.shift.rawValue | NSEvent.ModifierFlags.option.rawValue
 
         if clearFlags == shiftOptionFlags {
-            return .shiftOption
+            self = .shiftOption
         } else if clearFlags == shiftFlags {
-            return .shift
+            self = .shift
         } else if clearFlags == optionFlags {
-            return .option
+            self = .option
         } else {
-            return .none
+            self = .none
         }
+    }
+}
+
+@MainActor
+extension NSEvent {
+    var pressedModifiers: MBPopupKeys {
+        return MBPopupKeys(modifierFlags: modifierFlags)
     }
 
     var clickedStatusItem: NSStatusItem? {
@@ -36,6 +43,7 @@ extension NSEvent {
     }
 }
 
+@MainActor
 extension NSStatusItem {
     var realItem: NSStatusItem? {
         if #available(macOS 15.0, *) {
@@ -107,13 +115,5 @@ extension NSStatusItem {
             && event.type == .leftMouseDown
 
         return sameButton && sameWindow && !bartenderEvent && !isMoveEvent
-    }
-}
-
-extension NSStatusBarButton {
-    override open func mouseDown(with event: NSEvent) {
-        guard self != MBPopup.statusItemButton else { return }
-
-        super.mouseDown(with: event)
     }
 }

@@ -6,7 +6,8 @@
 import Cocoa
 import MBPopup
 
-@NSApplicationMain
+@main
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     let popupController: MBPopupController
     let myView: NSView
@@ -24,10 +25,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popupController.statusItem.button?.title = "MBPopup"
         popupController.statusItem.length = 70
 
+        popupController.backgroundView.usesGlassEffect = true // Liquid Glass on macOS 26+ (default: false)
         popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value
 
         popupController.openDuration = 0.15 // Default value
         popupController.closeDuration = 0.2 // Default value
+        popupController.alignment = .natural // Default value
+        popupController.showsArrow = false // Default value
         popupController.arrowSize = CGSize(width: 12, height: 8) // Default value
         popupController.contentInset = 1 // Default value
 

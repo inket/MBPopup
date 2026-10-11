@@ -1,5 +1,5 @@
 ## MBPopup
-![](https://img.shields.io/badge/Swift-5.8-orange.svg) ![](https://img.shields.io/badge/SwiftPM-supported-brightgreen.svg)
+![](https://img.shields.io/badge/Swift-6-orange.svg) ![](https://img.shields.io/badge/SwiftPM-supported-brightgreen.svg) ![](https://img.shields.io/badge/macOS-14%2B-blue.svg)
 
 MBPopup is a macOS framework for easily adding a customizable status bar popup to your apps.
 
@@ -44,12 +44,15 @@ popupController.statusItem.button?.title = "Test"
 popupController.statusItem.length = 70
 
 // Use popupController.backgroundView to customize the popup's background
-popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value
+popupController.backgroundView.usesGlassEffect = false // Default value, set to true for Liquid Glass on macOS 26+
+popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor // Default value, when not using glass
 
 // Customize animations, view sizes
 popupController.openDuration = 0.15 // Default value
 popupController.closeDuration = 0.2 // Default value
-popupController.arrowSize = CGSize(width: 12, height: 8) // Default value
+popupController.alignment = .natural // Default value (or .centered)
+popupController.showsArrow = false // Default value
+popupController.arrowSize = CGSize(width: 12, height: 8) // Default value (when shown)
 popupController.contentInset = 1 // Default value
 
 // Use callbacks to user actions (optional)

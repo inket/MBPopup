@@ -6,15 +6,20 @@
 import Foundation
 import Cocoa
 
-public struct MBPopup {
-    static var statusItemButton: NSStatusBarButton?
-}
-
 public enum MBPopupKeys {
     case none
     case shift
     case option
     case shiftOption
+}
+
+/// How the popup is positioned horizontally relative to its status item
+public enum MBPopupAlignment {
+    /// Centered under the status item
+    case centered
+    /// Like status item menus: the popup's leading edge is aligned with the status item's leading edge, or its trailing
+    /// edge with the status item's trailing edge when it wouldn't fit on screen otherwise
+    case natural
 }
 
 public class MBPopupController: NSWindowController {
@@ -31,6 +36,17 @@ public class MBPopupController: NSWindowController {
     public var arrowSize: CGSize {
         get { return backgroundView.arrowSize }
         set { backgroundView.arrowSize = newValue }
+    }
+
+    public var alignment: MBPopupAlignment = .natural
+
+    public var showsArrow: Bool {
+        get { return backgroundView.showsArrow }
+        set {
+            let size = containerView.frame.size
+            backgroundView.showsArrow = newValue
+            resizePopup(width: size.width, height: size.height)
+        }
     }
 
     public var contentInset: CGFloat {
@@ -51,6 +67,9 @@ public class MBPopupController: NSWindowController {
         }
     }
     fileprivate var isOpening: Bool = false
+
+    /// Space between the bottom of the menu bar and the top of the popup
+    private let menuBarSpacing: CGFloat = 1
 
     public var shouldOpenPopup: ((MBPopupKeys) -> Bool)?
     public var willOpenPopup: ((MBPopupKeys) -> Void)?
@@ -84,7 +103,40 @@ public class MBPopupController: NSWindowController {
     // Mark: Setup
 
     private func setup() {
-        MBPopup.statusItemButton = statusItem.button
+        if usesExpandedInterfaceSession {
+            setupExpandedInterfaceSession()
+        } else {
+            setupClickHandling()
+        }
+
+        panel.windowController = self
+        panel.acceptsMouseMovedEvents = true
+        panel.level = .popUpMenu
+        panel.isOpaque = false
+        panel.backgroundColor = NSColor.clear
+        panel.styleMask = .nonactivatingPanel
+        panel.hidesOnDeactivate = false
+        panel.hasShadow = true
+        panel.delegate = self
+        panel.contentView = backgroundView
+        backgroundView.addSubview(containerView)
+
+        let contentSize = contentView.frame.size
+
+        containerView.setup()
+        containerView.contentView = contentView
+
+        panel.initialFirstResponder = contentView
+
+        resizePopup(width: contentSize.width, height: contentSize.height)
+    }
+
+    private func setupClickHandling() {
+        if let button = statusItem.button {
+            let clickInterceptor = MBPopupClickInterceptorView(frame: button.bounds)
+            clickInterceptor.autoresizingMask = [.width, .height]
+            button.addSubview(clickInterceptor)
+        }
 
         self.mouseDownEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
             let shouldOpenPopup =
@@ -110,27 +162,6 @@ public class MBPopupController: NSWindowController {
 
             return event
         }
-
-        panel.windowController = self
-        panel.acceptsMouseMovedEvents = true
-        panel.level = .popUpMenu
-        panel.isOpaque = false
-        panel.backgroundColor = NSColor.clear
-        panel.styleMask = .nonactivatingPanel
-        panel.hidesOnDeactivate = false
-        panel.hasShadow = true
-        panel.delegate = self
-        panel.contentView = backgroundView
-        backgroundView.addSubview(containerView)
-
-        let contentSize = contentView.frame.size
-
-        containerView.setup()
-        containerView.contentView = contentView
-
-        panel.initialFirstResponder = contentView
-
-        resizePopup(width: contentSize.width, height: contentSize.height)
     }
 
     // MARK: Actions
@@ -162,7 +193,7 @@ public class MBPopupController: NSWindowController {
         var frame = panel.frame
 
         var newSize = CGSize(width: width, height: height)
-        newSize.height += arrowSize.height + contentInset * 2
+        newSize.height += backgroundView.visibleArrowSize.height + contentInset * 2
         newSize.width += contentInset * 2
 
         frame.origin.y -= newSize.height - frame.size.height
@@ -170,7 +201,12 @@ public class MBPopupController: NSWindowController {
 
         let widthDifference = newSize.width - frame.size.width
         if widthDifference != 0 {
-            frame.origin.x -= widthDifference / 2
+            if panel.isVisible {
+                let (screenRect, statusRect, _) = rects(forPanel: panel)
+                frame.origin.x = panelOriginX(forWidth: newSize.width, statusRect: statusRect, screenRect: screenRect)
+            } else {
+                frame.origin.x -= widthDifference / 2
+            }
             frame.size.width = newSize.width
         }
 
@@ -203,38 +239,39 @@ public class MBPopupController: NSWindowController {
     private func openPanel() {
         self.isOpening = true
 
-        if let currentEvent = NSApp.currentEvent, currentEvent.type == .leftMouseDown {
-            willOpenPopup?(currentEvent.pressedModifiers)
-        } else {
-            willOpenPopup?(.none)
-        }
+        willOpenPopup?(currentModifiers)
 
         self.isOpen = true
 
         contentView.isHidden = false
         let (_, _, panelRect) = rects(forPanel: panel)
 
-        NSApp.activate(ignoringOtherApps: false)
+        NSApp.activate()
         panel.alphaValue = 0
         panel.setFrame(panelRect, display: true)
 
         repositionPopupArrow()
 
         panel.makeKeyAndOrderFront(self)
+        panel.invalidateShadow()
 
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = openDuration
             self.panel.animator().alphaValue = 1
         }, completionHandler: {
-            self.isOpening = false
+            // AppKit calls animation completion handlers on the main thread
+            MainActor.assumeIsolated {
+                self.isOpening = false
 
-            if self.isOpen {
-                self.didOpenPopup?()
+                if self.isOpen {
+                    self.didOpenPopup?()
 
-                // Trying to open the popup from an inactive space/screen, will open the panel but lose key status
-                // because the system's "active screen change" overrides it. If the panel isn't the key window, clicking
-                // outside it won't close the popup. Therefore, we try to make the panel key _after_ opening it.
-                self.panel.makeKeyAndOrderFront(self)
+                    // Trying to open the popup from an inactive space/screen, will open the panel but lose key status
+                    // because the system's "active screen change" overrides it. If the panel isn't the key window,
+                    // clicking outside it won't close the popup. Therefore, we try to make the panel key _after_
+                    // opening it.
+                    self.panel.makeKeyAndOrderFront(self)
+                }
             }
         })
     }
@@ -244,34 +281,67 @@ public class MBPopupController: NSWindowController {
 
         self.isOpen = false
 
+        endExpandedInterfaceSession()
+
         contentView.isHidden = true
 
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = closeDuration
             self.panel.animator().alphaValue = 0
         }, completionHandler: {
-            guard !self.isOpen else { return }
+            // AppKit calls animation completion handlers on the main thread
+            MainActor.assumeIsolated {
+                guard !self.isOpen else { return }
 
-            self.panel.orderOut(nil)
-            self.statusItem.button?.isHighlighted = false
-            self.didClosePopup?()
+                self.panel.orderOut(nil)
+                self.statusItem.button?.isHighlighted = false
+                self.didClosePopup?()
+            }
         })
+    }
+
+    /// The modifiers held while opening the popup: those of the clicking event if there is one, otherwise the ones
+    /// currently held (e.g. when the popup is opened programmatically or by moving over from another menu)
+    var currentModifiers: MBPopupKeys {
+        if let currentEvent = NSApp.currentEvent, currentEvent.type == .leftMouseDown {
+            return currentEvent.pressedModifiers
+        } else {
+            return MBPopupKeys(modifierFlags: NSEvent.modifierFlags)
+        }
     }
 
     // MARK: Calculating CGRects
 
-    fileprivate func statusRect(forWindow window: NSWindow) -> CGRect {
-        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow
+    /// The window of the status item that was clicked by the user (which can be a replica on another screen before
+    /// macOS 15), or our status item's window if the popup wasn't opened by clicking
+    private var statusItemWindow: NSWindow? {
+        return lastMouseDownEvent?.clickedStatusItem?.realWindow ?? statusItem.button?.window
+    }
 
+    /// The edges that status item menus align to. Starting with macOS 26, menus extend 5pt past the status item's
+    /// window.
+    private func menuAlignmentRect(fallback statusRect: CGRect) -> CGRect {
+        guard let frame = statusItemWindow?.frame else { return statusRect }
+
+        if #available(macOS 26.0, *) {
+            return frame.insetBy(dx: -5, dy: 0)
+        } else {
+            return frame
+        }
+    }
+
+    fileprivate func statusRect(forWindow window: NSWindow) -> CGRect {
         var statusRect = statusItem.globalRect(usingWindow: statusItemWindow) ?? .zero
-        statusRect.origin.y = statusRect.minY - statusRect.height
+
+        // Place the popup below the menu bar rather than below the button, which is shorter than the menu bar. The
+        // status item's window spans the full menu bar height.
+        let menuBarMinY = statusItemWindow?.frame.minY ?? statusRect.minY
+        statusRect.origin.y = menuBarMinY - menuBarSpacing - statusRect.height
         return statusRect
     }
 
     private func rects(forPanel panel: NSPanel) -> (screenRect: CGRect, statusRect: CGRect, panelRect: CGRect) {
-        // Get the screen containing the status item that was clicked by the user
-        // If no click happened (panel opened programmatically), use the main screen
-        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow
+        // Get the screen containing the status item, or the main screen
         guard let screen = statusItemWindow?.screen ?? NSScreen.main else {
             return (CGRect.zero, CGRect.zero, CGRect.zero)
         }
@@ -280,14 +350,30 @@ public class MBPopupController: NSWindowController {
         let statusRect = self.statusRect(forWindow: panel)
 
         var panelRect = panel.frame
-        panelRect.origin.x = round(statusRect.midX - panelRect.width / 2)
+        panelRect.origin.x = panelOriginX(forWidth: panelRect.width, statusRect: statusRect, screenRect: screenRect)
         panelRect.origin.y = statusRect.maxY - panelRect.size.height
 
-        if panelRect.maxX > (screenRect.maxX - arrowSize.height) {
-            panelRect.origin.x -= panelRect.maxX - (screenRect.maxX - arrowSize.height)
-        }
-
         return (screenRect, statusRect, panelRect)
+    }
+
+    /// The panel's horizontal position for the given width, following `alignment` and keeping it on screen
+    private func panelOriginX(forWidth width: CGFloat, statusRect: CGRect, screenRect: CGRect) -> CGFloat {
+        switch alignment {
+        case .centered:
+            let x = round(statusRect.midX - width / 2)
+            let maxX = screenRect.maxX - arrowSize.height
+            return x + width > maxX ? maxX - width : x
+        case .natural:
+            let alignmentRect = menuAlignmentRect(fallback: statusRect)
+            let leftAligned = alignmentRect.minX
+            let rightAligned = alignmentRect.maxX - width
+
+            if NSApp.userInterfaceLayoutDirection == .rightToLeft {
+                return rightAligned >= screenRect.minX ? rightAligned : leftAligned
+            } else {
+                return leftAligned + width <= screenRect.maxX ? leftAligned : rightAligned
+            }
+        }
     }
 
     // MARK: Repositioning/Resizing Views when needed
@@ -304,7 +390,7 @@ public class MBPopupController: NSWindowController {
 
     // MARK: Deinitializing
 
-    deinit {
+    isolated deinit {
         if let monitor = mouseDownEventMonitor {
             NSEvent.removeMonitor(monitor)
         }
