@@ -13,6 +13,15 @@ public enum MBPopupKeys {
     case shiftOption
 }
 
+/// How the popup is positioned horizontally relative to its status item
+public enum MBPopupAlignment {
+    /// Centered under the status item
+    case centered
+    /// Like status item menus: the popup's leading edge is aligned with the status item's leading edge, or its trailing
+    /// edge with the status item's trailing edge when it wouldn't fit on screen otherwise
+    case natural
+}
+
 public class MBPopupController: NSWindowController {
     public let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     public let panel = MBPopupPanel()
@@ -28,6 +37,8 @@ public class MBPopupController: NSWindowController {
         get { return backgroundView.arrowSize }
         set { backgroundView.arrowSize = newValue }
     }
+
+    public var alignment: MBPopupAlignment = .natural
 
     public var showsArrow: Bool {
         get { return backgroundView.showsArrow }
@@ -190,7 +201,12 @@ public class MBPopupController: NSWindowController {
 
         let widthDifference = newSize.width - frame.size.width
         if widthDifference != 0 {
-            frame.origin.x -= widthDifference / 2
+            if panel.isVisible {
+                let (screenRect, statusRect, _) = rects(forPanel: panel)
+                frame.origin.x = panelOriginX(forWidth: newSize.width, statusRect: statusRect, screenRect: screenRect)
+            } else {
+                frame.origin.x -= widthDifference / 2
+            }
             frame.size.width = newSize.width
         }
 
@@ -295,9 +311,25 @@ public class MBPopupController: NSWindowController {
 
     // MARK: Calculating CGRects
 
-    fileprivate func statusRect(forWindow window: NSWindow) -> CGRect {
-        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow ?? statusItem.button?.window
+    /// The window of the status item that was clicked by the user (which can be a replica on another screen before
+    /// macOS 15), or our status item's window if the popup wasn't opened by clicking
+    private var statusItemWindow: NSWindow? {
+        return lastMouseDownEvent?.clickedStatusItem?.realWindow ?? statusItem.button?.window
+    }
 
+    /// The edges that status item menus align to. Starting with macOS 26, menus extend 5pt past the status item's
+    /// window.
+    private func menuAlignmentRect(fallback statusRect: CGRect) -> CGRect {
+        guard let frame = statusItemWindow?.frame else { return statusRect }
+
+        if #available(macOS 26.0, *) {
+            return frame.insetBy(dx: -5, dy: 0)
+        } else {
+            return frame
+        }
+    }
+
+    fileprivate func statusRect(forWindow window: NSWindow) -> CGRect {
         var statusRect = statusItem.globalRect(usingWindow: statusItemWindow) ?? .zero
 
         // Place the popup below the menu bar rather than below the button, which is shorter than the menu bar. The
@@ -308,9 +340,7 @@ public class MBPopupController: NSWindowController {
     }
 
     private func rects(forPanel panel: NSPanel) -> (screenRect: CGRect, statusRect: CGRect, panelRect: CGRect) {
-        // Get the screen containing the status item that was clicked by the user
-        // If no click happened (panel opened programmatically), use our status item's screen, or the main screen
-        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow ?? statusItem.button?.window
+        // Get the screen containing the status item, or the main screen
         guard let screen = statusItemWindow?.screen ?? NSScreen.main else {
             return (CGRect.zero, CGRect.zero, CGRect.zero)
         }
@@ -319,14 +349,30 @@ public class MBPopupController: NSWindowController {
         let statusRect = self.statusRect(forWindow: panel)
 
         var panelRect = panel.frame
-        panelRect.origin.x = round(statusRect.midX - panelRect.width / 2)
+        panelRect.origin.x = panelOriginX(forWidth: panelRect.width, statusRect: statusRect, screenRect: screenRect)
         panelRect.origin.y = statusRect.maxY - panelRect.size.height
 
-        if panelRect.maxX > (screenRect.maxX - arrowSize.height) {
-            panelRect.origin.x -= panelRect.maxX - (screenRect.maxX - arrowSize.height)
-        }
-
         return (screenRect, statusRect, panelRect)
+    }
+
+    /// The panel's horizontal position for the given width, following `alignment` and keeping it on screen
+    private func panelOriginX(forWidth width: CGFloat, statusRect: CGRect, screenRect: CGRect) -> CGFloat {
+        switch alignment {
+        case .centered:
+            let x = round(statusRect.midX - width / 2)
+            let maxX = screenRect.maxX - arrowSize.height
+            return x + width > maxX ? maxX - width : x
+        case .natural:
+            let alignmentRect = menuAlignmentRect(fallback: statusRect)
+            let leftAligned = alignmentRect.minX
+            let rightAligned = alignmentRect.maxX - width
+
+            if NSApp.userInterfaceLayoutDirection == .rightToLeft {
+                return rightAligned >= screenRect.minX ? rightAligned : leftAligned
+            } else {
+                return leftAligned + width <= screenRect.maxX ? leftAligned : rightAligned
+            }
+        }
     }
 
     // MARK: Repositioning/Resizing Views when needed

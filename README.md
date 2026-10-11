@@ -49,6 +49,7 @@ popupController.backgroundView.backgroundColor = NSColor.windowBackgroundColor /
 // Customize animations, view sizes
 popupController.openDuration = 0.15 // Default value
 popupController.closeDuration = 0.2 // Default value
+popupController.alignment = .natural // Default value (or .centered)
 popupController.showsArrow = false // Default value
 popupController.arrowSize = CGSize(width: 12, height: 8) // Default value (when shown)
 popupController.contentInset = 1 // Default value
