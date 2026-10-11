@@ -111,11 +111,3 @@ extension NSStatusItem {
         return sameButton && sameWindow && !bartenderEvent && !isMoveEvent
     }
 }
-
-extension NSStatusBarButton {
-    override open func mouseDown(with event: NSEvent) {
-        guard self != MBPopup.statusItemButton else { return }
-
-        super.mouseDown(with: event)
-    }
-}

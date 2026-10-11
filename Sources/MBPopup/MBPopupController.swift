@@ -6,10 +6,6 @@
 import Foundation
 import Cocoa
 
-public struct MBPopup {
-    @MainActor static var statusItemButton: NSStatusBarButton?
-}
-
 public enum MBPopupKeys {
     case none
     case shift
@@ -84,7 +80,11 @@ public class MBPopupController: NSWindowController {
     // Mark: Setup
 
     private func setup() {
-        MBPopup.statusItemButton = statusItem.button
+        if let button = statusItem.button {
+            let clickInterceptor = MBPopupClickInterceptorView(frame: button.bounds)
+            clickInterceptor.autoresizingMask = [.width, .height]
+            button.addSubview(clickInterceptor)
+        }
 
         self.mouseDownEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
             let shouldOpenPopup =
