@@ -32,9 +32,13 @@ extension MBPopupController {
             // While the session is active, clicks on the status item are handled by the system menu bar and never reach
             // our app, and the system doesn't end the session by itself. Watch for them globally to close the popup.
             self.mouseDownEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown) { [weak self] _ in
-                guard let self, isOpen else { return }
+                guard let self, isOpen, let statusItemFrame = statusItem.button?.window?.frame else { return }
 
-                if statusItem.globalRect(usingWindow: nil)?.contains(NSEvent.mouseLocation) == true {
+                // Use the status item's window rather than the button so the full menu bar height counts, and include
+                // the edges since clicking the topmost pixel reports a location equal to the screen's maxY
+                let location = NSEvent.mouseLocation
+                if (statusItemFrame.minX...statusItemFrame.maxX).contains(location.x),
+                   (statusItemFrame.minY...statusItemFrame.maxY).contains(location.y) {
                     closePopup()
                 }
             }
