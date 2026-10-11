@@ -29,6 +29,15 @@ public class MBPopupController: NSWindowController {
         set { backgroundView.arrowSize = newValue }
     }
 
+    public var showsArrow: Bool {
+        get { return backgroundView.showsArrow }
+        set {
+            let size = containerView.frame.size
+            backgroundView.showsArrow = newValue
+            resizePopup(width: size.width, height: size.height)
+        }
+    }
+
     public var contentInset: CGFloat {
         get { return containerView.contentInset }
         set {
@@ -47,6 +56,9 @@ public class MBPopupController: NSWindowController {
         }
     }
     fileprivate var isOpening: Bool = false
+
+    /// Space between the bottom of the menu bar and the top of the popup
+    private let menuBarSpacing: CGFloat = 1
 
     public var shouldOpenPopup: ((MBPopupKeys) -> Bool)?
     public var willOpenPopup: ((MBPopupKeys) -> Void)?
@@ -170,7 +182,7 @@ public class MBPopupController: NSWindowController {
         var frame = panel.frame
 
         var newSize = CGSize(width: width, height: height)
-        newSize.height += arrowSize.height + contentInset * 2
+        newSize.height += backgroundView.visibleArrowSize.height + contentInset * 2
         newSize.width += contentInset * 2
 
         frame.origin.y -= newSize.height - frame.size.height
@@ -287,7 +299,11 @@ public class MBPopupController: NSWindowController {
         let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow ?? statusItem.button?.window
 
         var statusRect = statusItem.globalRect(usingWindow: statusItemWindow) ?? .zero
-        statusRect.origin.y = statusRect.minY - statusRect.height
+
+        // Place the popup below the menu bar rather than below the button, which is shorter than the menu bar. The
+        // status item's window spans the full menu bar height.
+        let menuBarMinY = statusItemWindow?.frame.minY ?? statusRect.minY
+        statusRect.origin.y = menuBarMinY - menuBarSpacing - statusRect.height
         return statusRect
     }
 

@@ -11,6 +11,16 @@ public class MBPopupBackgroundView: NSView {
     public var backgroundColor = NSColor.windowBackgroundColor
 
     var arrowSize = CGSize(width: 12, height: 8)
+    var showsArrow = false {
+        didSet {
+            self.needsDisplay = true
+        }
+    }
+
+    /// The space taken by the arrow, `.zero` when it's hidden
+    var visibleArrowSize: CGSize {
+        return showsArrow ? arrowSize : .zero
+    }
 
     private let kappa: CGFloat = 0.55
 
@@ -23,6 +33,7 @@ public class MBPopupBackgroundView: NSView {
     public override func draw(_ dirtyRect: NSRect) {
         let contentRect = self.bounds
         let path = NSBezierPath()
+        let arrowSize = visibleArrowSize
 
         let maxX = contentRect.maxX
         let minX = contentRect.minX
@@ -101,7 +112,7 @@ public class MBPopupContainerView: NSView {
         superview.removeConstraints(superviewConstraints)
 
         let horizontalFormat = "H:|-\(contentInset)-[containerView]-\(contentInset)-|"
-        let verticalFormat = "V:|-\(superview.arrowSize.height + contentInset)-[containerView]-\(contentInset)-|"
+        let verticalFormat = "V:|-\(superview.visibleArrowSize.height + contentInset)-[containerView]-\(contentInset)-|"
 
         let horizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: horizontalFormat,
                                                                    options: .directionLeadingToTrailing,
