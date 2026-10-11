@@ -80,6 +80,35 @@ public class MBPopupController: NSWindowController {
     // Mark: Setup
 
     private func setup() {
+        if usesExpandedInterfaceSession {
+            setupExpandedInterfaceSession()
+        } else {
+            setupClickHandling()
+        }
+
+        panel.windowController = self
+        panel.acceptsMouseMovedEvents = true
+        panel.level = .popUpMenu
+        panel.isOpaque = false
+        panel.backgroundColor = NSColor.clear
+        panel.styleMask = .nonactivatingPanel
+        panel.hidesOnDeactivate = false
+        panel.hasShadow = true
+        panel.delegate = self
+        panel.contentView = backgroundView
+        backgroundView.addSubview(containerView)
+
+        let contentSize = contentView.frame.size
+
+        containerView.setup()
+        containerView.contentView = contentView
+
+        panel.initialFirstResponder = contentView
+
+        resizePopup(width: contentSize.width, height: contentSize.height)
+    }
+
+    private func setupClickHandling() {
         if let button = statusItem.button {
             let clickInterceptor = MBPopupClickInterceptorView(frame: button.bounds)
             clickInterceptor.autoresizingMask = [.width, .height]
@@ -110,27 +139,6 @@ public class MBPopupController: NSWindowController {
 
             return event
         }
-
-        panel.windowController = self
-        panel.acceptsMouseMovedEvents = true
-        panel.level = .popUpMenu
-        panel.isOpaque = false
-        panel.backgroundColor = NSColor.clear
-        panel.styleMask = .nonactivatingPanel
-        panel.hidesOnDeactivate = false
-        panel.hasShadow = true
-        panel.delegate = self
-        panel.contentView = backgroundView
-        backgroundView.addSubview(containerView)
-
-        let contentSize = contentView.frame.size
-
-        containerView.setup()
-        containerView.contentView = contentView
-
-        panel.initialFirstResponder = contentView
-
-        resizePopup(width: contentSize.width, height: contentSize.height)
     }
 
     // MARK: Actions
@@ -203,11 +211,7 @@ public class MBPopupController: NSWindowController {
     private func openPanel() {
         self.isOpening = true
 
-        if let currentEvent = NSApp.currentEvent, currentEvent.type == .leftMouseDown {
-            willOpenPopup?(currentEvent.pressedModifiers)
-        } else {
-            willOpenPopup?(.none)
-        }
+        willOpenPopup?(currentModifiers)
 
         self.isOpen = true
 
@@ -248,6 +252,8 @@ public class MBPopupController: NSWindowController {
 
         self.isOpen = false
 
+        endExpandedInterfaceSession()
+
         contentView.isHidden = true
 
         NSAnimationContext.runAnimationGroup({ context in
@@ -265,10 +271,20 @@ public class MBPopupController: NSWindowController {
         })
     }
 
+    /// The modifiers held while opening the popup: those of the clicking event if there is one, otherwise the ones
+    /// currently held (e.g. when the popup is opened programmatically or by moving over from another menu)
+    var currentModifiers: MBPopupKeys {
+        if let currentEvent = NSApp.currentEvent, currentEvent.type == .leftMouseDown {
+            return currentEvent.pressedModifiers
+        } else {
+            return MBPopupKeys(modifierFlags: NSEvent.modifierFlags)
+        }
+    }
+
     // MARK: Calculating CGRects
 
     fileprivate func statusRect(forWindow window: NSWindow) -> CGRect {
-        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow
+        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow ?? statusItem.button?.window
 
         var statusRect = statusItem.globalRect(usingWindow: statusItemWindow) ?? .zero
         statusRect.origin.y = statusRect.minY - statusRect.height
@@ -277,8 +293,8 @@ public class MBPopupController: NSWindowController {
 
     private func rects(forPanel panel: NSPanel) -> (screenRect: CGRect, statusRect: CGRect, panelRect: CGRect) {
         // Get the screen containing the status item that was clicked by the user
-        // If no click happened (panel opened programmatically), use the main screen
-        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow
+        // If no click happened (panel opened programmatically), use our status item's screen, or the main screen
+        let statusItemWindow = lastMouseDownEvent?.clickedStatusItem?.realWindow ?? statusItem.button?.window
         guard let screen = statusItemWindow?.screen ?? NSScreen.main else {
             return (CGRect.zero, CGRect.zero, CGRect.zero)
         }

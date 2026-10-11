@@ -6,23 +6,29 @@
 import Foundation
 import Cocoa
 
-@MainActor
-extension NSEvent {
-    var pressedModifiers: MBPopupKeys {
-        let clearFlags = self.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue
+extension MBPopupKeys {
+    init(modifierFlags: NSEvent.ModifierFlags) {
+        let clearFlags = modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue
         let shiftFlags = NSEvent.ModifierFlags.shift.rawValue
         let optionFlags = NSEvent.ModifierFlags.option.rawValue
         let shiftOptionFlags = NSEvent.ModifierFlags.shift.rawValue | NSEvent.ModifierFlags.option.rawValue
 
         if clearFlags == shiftOptionFlags {
-            return .shiftOption
+            self = .shiftOption
         } else if clearFlags == shiftFlags {
-            return .shift
+            self = .shift
         } else if clearFlags == optionFlags {
-            return .option
+            self = .option
         } else {
-            return .none
+            self = .none
         }
+    }
+}
+
+@MainActor
+extension NSEvent {
+    var pressedModifiers: MBPopupKeys {
+        return MBPopupKeys(modifierFlags: modifierFlags)
     }
 
     var clickedStatusItem: NSStatusItem? {
